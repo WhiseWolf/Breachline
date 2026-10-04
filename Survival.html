@@ -1,4 +1,109 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Breachline — Last Stand</title>
-<style>*{box-sizing:border-box}body{margin:0;background:#0b151b;color:#e8efed;font:16px system-ui}main{max-width:1000px;margin:auto;padding:16px}h1{letter-spacing:3px;margin:8px 0}p{color:#aabfc5}button{background:#83ebd5;color:#10212a;font:700 16px system-ui;padding:14px;border:0;border-radius:8px;min-height:48px}canvas{display:block;width:100%;background:#18302a;border:1px solid #47635b;touch-action:none;border-radius:8px}#hud{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding:14px 0;font-weight:bold}#panel{padding:16px 0}#scores{color:#aabfc5}#controls{display:flex;gap:12px;align-items:center}#language{margin-left:auto;background:#263d46;color:white}#status{min-height:24px}</style>
-<main><div id="controls"><h1>BREACHLINE</h1><button id="language">Deutsch</button></div><p id="intro"></p><div id="hud"><span id="time"></span><span id="health"></span><span id="wave"></span><span id="kills"></span></div><canvas id="game" width="960" height="640" tabindex="0" aria-label="Survival arena"></canvas><div id="panel"><button id="start"></button> <button id="pause" hidden></button><section id="upgrades" hidden><h2 id="upgradeTitle"></h2><button id="damage"></button> <button id="rate"></button> <button id="heal"></button></section><p id="status" role="status"></p><p id="scores"></p></div></main>
-<script src="src/survival-core.js"></script><script src="src/survival-ui.js"></script></html>
+<style>*{box-sizing:border-box}body{margin:0;background:#0b151b;color:#e8efed;font:16px system-ui}main{max-width:1000px;margin:auto;padding:16px}h1{letter-spacing:3px;margin:8px 0}p{color:#aabfc5}button{background:#83ebd5;color:#10212a;font:700 16px system-ui;padding:14px;border:0;border-radius:8px;min-height:48px}canvas{display:block;width:100%;background:#18302a;border:1px solid #47635b;touch-action:none;border-radius:8px}#hud{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding:14px 0;font-weight:bold}#panel{padding:16px 0}#scores{color:#aabfc5}#controls{display:flex;gap:12px;align-items:center}#language{margin-left:auto;background:#263d46;color:white}#status{min-height:24px}
+#movePad{touch-action:none;user-select:none;-webkit-user-select:none;position:relative;height:132px;border:1px solid #48665f;background:#142a30;border-radius:12px;margin:12px 0;display:flex;align-items:center;justify-content:center;color:#bbd6d0}#movePad:before{content:'↕  ↔';border:2px solid #71dbc7;border-radius:50%;width:86px;height:86px;display:grid;place-items:center;font-size:24px}#movePad span{position:absolute;right:12px;bottom:8px;font-size:12px}#moveKnob{position:absolute;left:50%;top:50%;margin:-13px;width:26px;height:26px;border-radius:50%;background:#83ebd5;pointer-events:none;opacity:.7}#namePanel{padding:14px;background:#172d35;border-radius:8px}input{font:inherit;padding:12px;max-width:100%;border:1px solid #6d8b84;border-radius:6px}#scoreList{line-height:1.8}button:focus-visible,input:focus-visible{outline:3px solid #ffc66d;outline-offset:3px}@media(max-width:600px){main{padding:8px}h1{font-size:22px}#intro{font-size:13px;margin:6px 0}#hud{font-size:13px;padding:8px 0}#panel{padding:6px 0}#movePad{height:124px;margin:8px 0}}
+</style>
+<main><div id="controls"><h1>BREACHLINE</h1><button id="language">Deutsch</button></div><p id="intro"></p><div id="hud"><span id="time"></span><span id="health"></span><span id="wave"></span><span id="kills"></span></div><canvas id="game" width="960" height="640" tabindex="0" aria-label="Survival arena"></canvas><div id="movePad" aria-label="Movement pad"><i id="moveKnob"></i><span id="moveLabel"></span></div><div id="panel"><button id="start"></button> <button id="pause" hidden></button><section id="upgrades" hidden><h2 id="upgradeTitle"></h2><button id="damage"></button> <button id="rate"></button> <button id="heal"></button></section><p id="status" role="status"></p><section id="namePanel" hidden><label id="nameLabel" for="playerName"></label><br><input id="playerName" maxlength="24" autocomplete="off" spellcheck="false"><button id="saveName"></button><p id="nameNote"></p></section><p id="scores"></p><ol id="scoreList"></ol></div></main>
+<script>(function(root){
+'use strict';
+const W=960,H=640;
+function create(){return {time:0,wave:0,nextWave:0,spawn:0,remaining:0,kills:0,dead:false,upgrade:false,upgrades:0,player:{x:480,y:320,hp:100,inv:0,cool:0,angle:0,damage:1,interval:.32},enemies:[],shots:[],id:0};}
+function step(s,input,dt,random=Math.random){
+ if(s.dead||s.upgrade)return;s.time+=dt;
+ const p=s.player;p.inv=Math.max(0,p.inv-dt);p.cool-=dt;
+ let dx=input.x||0,dy=input.y||0,len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}
+ p.moving=len>.01;
+ p.x=Math.max(20,Math.min(W-20,p.x+dx*205*dt));p.y=Math.max(20,Math.min(H-20,p.y+dy*205*dt));
+ if(s.time>=s.nextWave){s.wave++;s.remaining+=9+s.wave*3;s.nextWave=s.time+20;s.spawn=0;if(s.wave%2===0){s.upgrade=true;return;}}
+ s.spawn-=dt;
+ if(s.remaining&&s.spawn<=0&&s.enemies.length<100){const side=Math.floor(random()*4),t=random(),roll=random(),kind=s.wave>=3&&roll<.2?'brute':s.wave>=2&&roll<.5?'runner':'walker';s.enemies.push({id:++s.id,x:side===0?-18:side===1?W+18:t*W,y:side===2?-18:side===3?H+18:t*H,kind,hp:kind==='brute'?9:kind==='runner'?2:3,r:kind==='brute'?20:13,speed:kind==='runner'?Math.min(215,135+s.wave*5):kind==='brute'?Math.min(115,38+s.wave*4):Math.min(155,48+s.wave*7),angle:0});s.remaining--;s.spawn=Math.max(.18,.6-s.wave*.035);}
+ let target=null,best=310;
+ for(const e of s.enemies){const distance=Math.hypot(e.x-p.x,e.y-p.y);if(distance<best){best=distance;target=e;}}
+ if(target&&p.cool<=0){p.angle=Math.atan2(target.y-p.y,target.x-p.x);p.cool=p.interval;target.hp-=p.damage;s.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:.09});if(target.hp<=0)s.kills++;}
+ s.enemies=s.enemies.filter(e=>e.hp>0);
+ for(const e of s.enemies){const dx=p.x-e.x,dy=p.y-e.y,d=Math.hypot(dx,dy);e.angle=Math.atan2(dy,dx);if(d>0){e.x+=dx/d*e.speed*dt;e.y+=dy/d*e.speed*dt;}if(d<14+(e.r||13)&&p.inv<=0){p.hp=Math.max(0,p.hp-20);p.inv=.8;if(!p.hp){s.dead=true;break;}}}
+ s.shots=s.shots.filter(b=>(b.life-=dt)>0);
+}
+function choose(s,choice){if(s.dead||!s.upgrade||!['damage','rate','heal'].includes(choice))return false;if(choice==='damage')s.player.damage+=.5;if(choice==='rate')s.player.interval=Math.max(.12,s.player.interval*.85);if(choice==='heal')s.player.hp=Math.min(100,s.player.hp+40);s.upgrade=false;s.upgrades++;return true;}
+function scoreName(value){return String(value||'').replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,24)||'Operator';}
+function readScores(data){return (Array.isArray(data)?data:[]).map(x=>typeof x==='number'?{time:x,name:'Operator'}:x).filter(x=>x&&Number.isFinite(x.time)&&x.time>=0).map(x=>({time:x.time,name:scoreName(x.name)})).sort((a,b)=>b.time-a.time).slice(0,5);}
+const api={W,H,create,step,choose,scoreName,readScores};if(typeof module!=='undefined')module.exports=api;else root.Survival=api;
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script><script>/* Lightweight orthographic 3D geometry, projected into Canvas; no external engine. */
+function drawSurvival3D(c,s,zoom=1){
+ const faces=[],cx=zoom>1?s.player.x:480,cy=zoom>1?s.player.y:320,project=(x,y,z=0)=>({x:480+((x-cx)*.72-(y-cy)*.33)*zoom,y:350+((x-cx)*.2+(y-cy)*.5-z*.9)*zoom});
+ function poly(points,color){c.fillStyle=color;c.beginPath();points.forEach((v,i)=>{const p=project(...v);i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y);});c.closePath();c.fill();}
+ function box(x,y,z,w,d,h,color,angle=0){
+  const cs=Math.cos(angle),sn=Math.sin(angle),v=[];
+  for(const dz of [0,h])for(const [dx,dy] of [[-w/2,-d/2],[w/2,-d/2],[w/2,d/2],[-w/2,d/2]])v.push([x+dx*cs-dy*sn,y+dx*sn+dy*cs,z+dz]);
+  const rgb=color.match(/\w\w/g).map(x=>parseInt(x,16));
+  for(const [indices,shade] of [[[0,1,5,4],.65],[[1,2,6,5],.8],[[2,3,7,6],.85],[[3,0,4,7],.7],[[4,5,6,7],1]]){
+   const points=indices.map(i=>v[i]),depth=points.reduce((n,p)=>n+p[0]*.2+p[1]*.5+p[2]*.32,0)/4;
+   faces.push({points,depth,color:'rgb('+rgb.map(n=>Math.round(n*shade)).join(',')+')'});
+  }
+ }
+ c.fillStyle='#0d1d23';c.fillRect(0,0,960,640);
+ for(let x=0;x<960;x+=80)for(let y=0;y<640;y+=80)poly([[x,y,0],[x+80,y,0],[x+80,y+80,0],[x,y+80,0]],(x>=400&&x<560)||(y>=240&&y<400)?'#52605a':((x+y)/80)%2?'#284b3c':'#2b503f');
+ // Border scenery is decorative and remains outside collision bounds.
+ for(let x=40;x<960;x+=120)for(const y of [-18,658]){box(x,y,0,12,12,28,'695547');box(x,y,23,45,42,25,'335d43');box(x,y,44,29,28,17,'447650');}
+ function unit(u,player){
+  const angle=u.angle||0,cs=Math.cos(angle),sn=Math.sin(angle),scale=u.kind==='brute'?1.4:u.kind==='runner'?.85:1;
+  const gait=player&&!u.moving?0:Math.sin(s.time*(player?14:u.speed*.15)+(u.id||0))*4;
+  function part(fwd,side,z,w,d,h,col){box(u.x+(fwd*cs-side*sn)*scale,u.y+(fwd*sn+side*cs)*scale,z*scale,w*scale,d*scale,h*scale,col,angle);}
+  const armor=player?'617261':u.kind==='runner'?'cb9559':u.kind==='brute'?'95748f':'829663';
+  part(gait,-6,0,13,7,6,'202e32');part(-gait,6,0,13,7,6,'202e32');
+  part(gait*.4,-6,6,8,7,15,armor);part(-gait*.4,6,6,8,7,15,armor);
+  part(0,0,19,13,21,19,armor);part(7,0,21,4,16,13,player?'2b3e43':armor);
+  part(player?3:10,-14,23,player?9:19,6,7,armor);part(player?3:10,14,23,player?9:19,6,7,armor);
+  part(0,0,39,15,16,12,player?'99a68a':'b3b98b');
+  part(8,0,41,2,12,4,player?'152c35':'e16d52');
+  if(player){part(0,-12,31,9,5,4,'76edd9');part(0,12,31,9,5,4,'76edd9');part(13,7,28,27,4,4,'1c2c35');part(27,7,29,10,2,2,'253d45');part(0,0,52,5,10,1,'76edd9');}
+ }
+ for(const e of s.enemies)unit(e,false);unit(s.player,true);
+ faces.sort((a,b)=>a.depth-b.depth);for(const f of faces)poly(f.points,f.color);
+ for(const shot of s.shots){const a=project(shot.x,shot.y,30),b=project(shot.tx,shot.ty,25);c.strokeStyle='#ffe498';c.lineWidth=3;c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}
+ for(const e of s.enemies){const q=project(e.x,e.y);if(q.x>=16&&q.x<=944&&q.y>=16&&q.y<=624)continue;const dx=q.x-480,dy=q.y-320,k=Math.min(460/Math.max(1,Math.abs(dx)),300/Math.max(1,Math.abs(dy)));c.save();c.translate(480+dx*k,320+dy*k);c.rotate(Math.atan2(dy,dx));c.fillStyle=e.kind==='runner'?'#ffc075':'#f49c87';c.beginPath();c.moveTo(9,0);c.lineTo(-6,-5);c.lineTo(-6,5);c.closePath();c.fill();c.restore();}
+// Clear position cue remains visible during contact damage.
+ const p=project(s.player.x,s.player.y);c.strokeStyle=s.player.inv>0?'#ffb29c':'#8ef3df';c.lineWidth=2;c.beginPath();c.ellipse(p.x,p.y,15,6,0,0,Math.PI*2);c.stroke();
+}
+</script><script>'use strict';
+function operator(c,x,y,angle,step,team,firing,selected){
+const stride=Math.sin(step)*5,accent=team===0?'#76edd9':'#ff9a80';
+c.save();c.translate(x,y);c.fillStyle='#0007';c.beginPath();c.ellipse(2,4,20,16,0,0,Math.PI*2);c.fill();if(selected){c.strokeStyle='#9df5e0';c.lineWidth=2;c.strokeRect(-26,-26,52,52);}c.rotate(angle);
+function part(x,y,w,h,color){c.fillStyle=color;c.fillRect(x,y,w,h);}
+// Articulated boots and trouser legs.
+part(-12,8+stride,9,15,'#59644e');part(3,8-stride,9,15,'#59644e');part(-13,18+stride,10,6,'#182325');part(3,18-stride,10,6,'#182325');
+part(-13,-7,26,25,'#626f55');part(-11,-5,22,23,'#273a39');part(-14,3,5,12,'#708064');part(9,3,5,12,'#708064');
+// Plate carrier, shoulder panels, magazine pouches, belt.
+part(-8,-2,16,14,'#455447');part(-8,5,4,9,'#a0a083');part(-2,5,4,9,'#879477');part(4,5,4,9,'#9ba083');part(-11,17,22,4,'#151f22');part(-17,-6,6,14,'#758165');part(11,-6,6,14,'#758165');part(-18,-7,5,5,accent);part(13,-7,5,5,accent);
+// Arms, gloves and carbine at the shoulder.
+c.strokeStyle='#68765a';c.lineWidth=7;c.lineCap='round';c.beginPath();c.moveTo(-14,-4);c.lineTo(-12,-17);c.lineTo(0,-23);c.moveTo(14,-4);c.lineTo(13,-16);c.lineTo(5,-24);c.stroke();part(-2,-27,7,7,'#19272a');part(2,-35+(firing?2:0),5,27,'#101c21');part(0,-22,9,8,'#29383b');part(3,-42+(firing?2:0),3,9,'#11191e');part(1,-29,7,3,'#748078');
+// Helmet, headset, night-vision mounting bracket.
+c.fillStyle='#99a183';c.beginPath();c.ellipse(0,-10,10,11,0,0,Math.PI*2);c.fill();part(-11,-14,4,9,'#263c3e');part(7,-14,4,9,'#263c3e');part(-6,-18,12,4,'#56694f');part(-3,-22,6,5,'#26383b');part(-4,-6,8,3,accent);
+if(firing){c.fillStyle='#ffdf83';c.beginPath();c.moveTo(4,-44);c.lineTo(-3,-51);c.lineTo(3,-49);c.lineTo(5,-59);c.lineTo(8,-49);c.lineTo(12,-52);c.lineTo(8,-43);c.fill();}c.restore();}
+const canvas=document.getElementById('game'),c=canvas.getContext('2d'),$=id=>document.getElementById(id),B=Survival;
+let s=B.create(),running=false,paused=false,lang='en',keys=new Set(),touch=null,previous=0,acc=0,scores=[],storageOK=true,lastScore=null,nameSaved=false;
+try{const data=JSON.parse(localStorage.getItem('breachline.survival.s2.scores')||'[]');scores=B.readScores(data);}catch{storageOK=false;}
+const words={en:{intro:'LAST STAND · One life. Survive the infected. WASD / arrows to move. Touch: drag on the movement pad BELOW the arena to keep the view clear. Your operator fires at the closest threat automatically.',start:'Start run',restart:'New run',pause:'Pause',resume:'Resume',ready:'Stay moving. New waves every 20 seconds.',dead:'Run ended. One life. No revive.',paused:'Paused — resume when ready.',local:'Local times only — editable, not a verified global ranking.',time:'Time',hp:'Health',wave:'Wave',kills:'Kills'},de:{intro:'LAST STAND · Ein Leben. Überlebe die Infizierten. WASD / Pfeiltasten: bewegen. Touch: auf der Steuerfläche UNTER der Karte ziehen, damit die Sicht frei bleibt. Dein Operator feuert automatisch auf die nächste Bedrohung.',start:'Run starten',restart:'Neuer Run',pause:'Pause',resume:'Weiter',ready:'Bleib in Bewegung. Neue Wellen alle 20 Sekunden.',dead:'Run beendet. Ein Leben. Keine Wiederbelebung.',paused:'Pausiert — weiter, wenn du bereit bist.',local:'Nur lokale Zeiten — manipulierbar, keine verifizierte globale Rangliste.',time:'Zeit',hp:'Gesundheit',wave:'Welle',kills:'Abschüsse'}};
+function ui(){const t=words[lang];$('moveLabel').textContent=lang==='en'?'Drag here to move':'Hier zum Bewegen ziehen';$('nameLabel').textContent=lang==='en'?'Name for this local run':'Name für diesen lokalen Run';$('saveName').textContent=nameSaved?(lang==='en'?'Saved locally':'Lokal gespeichert'):(lang==='en'?'Save name':'Name speichern');if(!touch)$('moveKnob').style.transform='';$('nameNote').textContent=lang==='en'?'Optional. Stored on this device only. Not uploaded.':'Optional. Nur auf diesem Gerät gespeichert. Wird nicht hochgeladen.';$('namePanel').hidden=!s.dead;$('upgrades').hidden=!s.upgrade;$('upgradeTitle').textContent=lang==='en'?'Field upgrade · time is paused':'Feldausrüstung · Zeit pausiert';$('damage').textContent=lang==='en'?'+50% base damage':'+50% Basisschaden';$('rate').textContent=lang==='en'?'15% shorter shot delay':'15% kürzere Schusspause';$('heal').textContent=lang==='en'?'Recover 40 health':'40 Gesundheit heilen';$('intro').textContent=t.intro;$('start').textContent=s.dead?t.restart:t.start;$('start').hidden=running;$('pause').hidden=!running;$('pause').textContent=paused?t.resume:t.pause;$('language').textContent=lang==='en'?'Deutsch':'English';$('status').textContent=s.dead?t.dead:paused?t.paused:t.ready;$('time').textContent=t.time+' '+s.time.toFixed(1)+'s';$('health').textContent=t.hp+' '+s.player.hp;$('wave').textContent=t.wave+' '+s.wave;$('kills').textContent=t.kills+' '+s.kills;$('scores').textContent=t.local+' '+''+(storageOK?'':' / Storage unavailable');}
+function saveScores(){try{if(lastScore)localStorage.setItem('breachline.survival.s2.lastRun',JSON.stringify(lastScore));localStorage.setItem('breachline.survival.s2.scores',JSON.stringify(scores));}catch{storageOK=false;}const list=$('scoreList');list.replaceChildren();for(const row of scores){const item=document.createElement('li');item.textContent=row.name+' — '+row.time.toFixed(1)+'s';list.append(item);}}
+function finish(){running=false;keys.clear();touch=null;nameSaved=false;lastScore={time:Math.round(s.time*10)/10,name:'Operator'};scores.push(lastScore);scores.sort((a,b)=>b.time-a.time);scores=scores.slice(0,5);$('playerName').value='';saveScores();ui();}
+$('saveName').onclick=()=>{if(!s.dead||!lastScore)return;lastScore.name=B.scoreName($('playerName').value);nameSaved=true;saveScores();$('saveName').textContent=lang==='en'?'Saved locally':'Lokal gespeichert';};
+function draw(){drawSurvival3D(c,s,canvas.clientWidth<600?1.7:1);
+if(s.dead||paused||s.upgrade||!running){c.fillStyle='#09151dbb';c.fillRect(0,0,960,640);c.textAlign='center';c.fillStyle='#e8efed';c.font='bold 40px system-ui';c.fillText(s.upgrade?(lang==='en'?'CHOOSE YOUR UPGRADE':'AUSRÜSTUNG WÄHLEN'):s.dead?(lang==='en'?'RUN ENDED':'RUN BEENDET'):paused?(lang==='en'?'PAUSED':'PAUSIERT'):'LAST STAND',480,290);c.font='24px system-ui';c.fillText(s.dead?s.time.toFixed(1)+' seconds':'BREACHLINE / SURVIVAL PROTOTYPE',480,335);}}
+function frame(now){const dt=Math.min(.1,(now-previous)/1000||0);previous=now;if(running&&!paused){acc+=dt;while(acc>=1/60&&!s.dead){let x=(keys.has('d')||keys.has('ArrowRight')?1:0)-(keys.has('a')||keys.has('ArrowLeft')?1:0),y=(keys.has('s')||keys.has('ArrowDown')?1:0)-(keys.has('w')||keys.has('ArrowUp')?1:0);if(touch){x=touch.dx;y=touch.dy;}const worldX=(.5*x+.33*y),worldY=(-.2*x+.72*y),length=Math.hypot(worldX,worldY),strength=Math.min(1,Math.hypot(x,y));B.step(s,{x:length?worldX/length*strength:0,y:length?worldY/length*strength:0},1/60);acc-=1/60;}if(s.dead)finish();}else acc=0;draw();ui();requestAnimationFrame(frame);}
+$('start').onclick=()=>{s=B.create();running=true;paused=false;acc=0;keys.clear();touch=null;canvas.focus({preventScroll:true});};$('pause').onclick=()=>{paused=!paused;keys.clear();touch=null;if(!paused)canvas.focus({preventScroll:true});};$('language').onclick=()=>{lang=lang==='en'?'de':'en';document.documentElement.lang=lang;ui();};
+window.addEventListener('keydown',e=>{if(['w','a','s','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){if(['BUTTON','INPUT','TEXTAREA'].includes(e.target.tagName))return;e.preventDefault();keys.add(e.key);}});window.addEventListener('keyup',e=>keys.delete(e.key));window.addEventListener('blur',()=>{keys.clear();touch=null;if(running)paused=true;});document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){paused=true;keys.clear();touch=null;}});
+function position(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)*960/r.width,y:(e.clientY-r.top)*640/r.height};}
+canvas.addEventListener('pointerdown',e=>{if(!running||paused||s.upgrade||touch)return;canvas.setPointerCapture(e.pointerId);const p=position(e);touch={...p,dx:0,dy:0,id:e.pointerId};});canvas.addEventListener('pointermove',e=>{if(!touch||touch.id!==e.pointerId)return;const p=position(e),x=p.x-touch.x,y=p.y-touch.y,d=Math.max(40,Math.hypot(x,y));touch.dx=x/d;touch.dy=y/d;});for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(event,e=>{if(touch?.id===e.pointerId)touch=null;});
+ui();requestAnimationFrame(frame);
+
+for(const choice of ['damage','rate','heal'])$(choice).onclick=()=>{if(B.choose(s,choice)){keys.clear();touch=null;acc=0;canvas.focus({preventScroll:true});ui();}};
+
+const pad=$('movePad'),knob=$('moveKnob');
+function releasePad(e){if(touch?.pad&&touch.id===e.pointerId){touch=null;knob.style.transform='';}}
+pad.addEventListener('pointerdown',e=>{if(!running||paused||s.upgrade||touch)return;e.preventDefault();pad.setPointerCapture(e.pointerId);touch={id:e.pointerId,pad:true,x:e.clientX,y:e.clientY,dx:0,dy:0};});
+pad.addEventListener('pointermove',e=>{if(!touch?.pad||touch.id!==e.pointerId)return;e.preventDefault();const x=e.clientX-touch.x,y=e.clientY-touch.y,d=Math.max(40,Math.hypot(x,y));touch.dx=x/d;touch.dy=y/d;knob.style.transform=`translate(${touch.dx*32}px,${touch.dy*32}px)`;});
+for(const event of ['pointerup','pointercancel','lostpointercapture'])pad.addEventListener(event,releasePad);
+// Paint loaded results without changing stored data on page load.
+for(const row of scores){const item=document.createElement('li');item.textContent=row.name+' — '+row.time.toFixed(1)+'s';$('scoreList').append(item);}
+</script></html>
