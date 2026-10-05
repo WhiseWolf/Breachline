@@ -1,0 +1,30 @@
+# Secrets / credentials
+.env
+.env.*
+*.pem
+*.key
+id_rsa
+credentials.*
+
+# Local agent/runtime state
+.openjarvis/
+*.db
+*.sqlite
+*.sqlite3
+memory.db
+scheduler.db
+*.log
+
+# Local model/runtime caches
+.ollama/
+__pycache__/
+*.pyc
+.venv/
+venv/
+node_modules/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
