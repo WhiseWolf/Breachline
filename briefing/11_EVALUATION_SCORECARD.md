@@ -45,3 +45,9 @@ Durchschnitt > 4:
 - Kandidat für Vertiefung.
 
 Ein hoher Score ersetzt keine echte Nutzer-Validierung.
+
+## Bewertungsvertrag
+Jede Bewertung enthält Run-ID, Bewertungszeit aus der Systemuhr, Belege und kurze Begründung pro Dimension.
+Unbekannt ist UNASSESSED, nicht automatisch 5 oder 0. Keinen Durchschnitt aus fehlenden Werten als belastbar darstellen.
+Neue Dokumentation ist nicht automatisch Novel Learning.
+Die Scorecard ist kein Ersatz für nachgewiesene Gate-Übergänge.

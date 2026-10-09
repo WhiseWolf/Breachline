@@ -40,3 +40,9 @@ Jede neue Abhängigkeit wird in `logs/COST_LEDGER.md` erfasst mit:
 Der erwartete Gesamtwert muss immer bleiben:
 
 `ADDITIONAL_COST = 0.00 EUR`
+
+## Ausführung und bestehende Ressourcen
+Kostenlosigkeit nicht aus einem Produktnamen oder Free-Tier-Label ableiten. Quelle, Limits und automatische Kostenentstehung vor tatsächlicher Nutzung prüfen.
+Für vorhandene lokale Tools keine fiktive Installation buchen; tatsächlichen Bestand und unbekannte Kostenhistorie getrennt dokumentieren.
+Preflight erlaubt keine externe Veröffentlichung ohne passende Freigabe.
+Ledger-Einträge enthalten tatsächliche Durchführung oder den Status PLANNED/NOT_EXECUTED.

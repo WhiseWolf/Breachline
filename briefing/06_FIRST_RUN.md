@@ -1,41 +1,11 @@
-# FIRST RUN – erste Agentenmission
-
-## Mission
-Untersuche systematisch den Markt für Browser-Spiele und finde belastbare Produktchancen für ein Spiel, das über organische Verbreitung auf TikTok, Instagram und YouTube wachsen und langfristig monetarisiert werden kann.
-
-Hinterfrage bestehende Annahmen.
-
-Breachline ist nur ein möglicher Kandidat und besitzt keine Priorität.
-
-## Erste Testziele für den Agenten selbst
-Während längerer Läufe beobachten:
-- Was tut der Agent nach 10 Minuten?
-- Was tut er nach 2 Stunden?
-- Was tut er nach 8 Stunden?
-- Wiederholt er sich?
-- Erfindet er Fakten?
-- Speichert er Quellen?
-- Erkennt er widersprüchliche Quellen?
-- Werden Hypothesen mit der Zeit besser?
-- Trennt er Rohdaten und Interpretation?
-- Kann ein separater Auditor schlechte Schlussfolgerungen erkennen?
-- Arbeitet er weiter, wenn keine menschliche Entscheidung nötig ist?
-
-## Agentenrollen
-### Market Intelligence
-Sammelt Markt- und Produktbeobachtungen.
-
-### Social Intelligence
-Analysiert Social-Hooks, Clipbarkeit und organische Verbreitungsmechanismen.
-
-### Product Scientist
-Formuliert Hypothesen und Experimente.
-
-### Auditor / Red Team
-Versucht Schlussfolgerungen zu widerlegen, findet schwache Evidenz und Bias.
-
-### Game Builder
-Bleibt zunächst nachrangig und wird erst aktiviert, wenn ein Kandidat die Research-/Evidence-Gates besteht.
-
-## Erfolgsmaß
-Nicht Tokens pro Sekunde. Entscheidend ist, ob der Agent nach mehreren Stunden nachvollziehbar, evidenzbasiert, reproduzierbar und zunehmend besser arbeitet.
+# Initialmission und Wiederaufnahme
+Die ursprüngliche Initialmission ist kein Auftrag, bei jedem Neustart erneut bei Null zu beginnen.
+## Initialmission
+Browser-Spielgelegenheiten recherchieren, überprüfbare Quellen speichern, Konzepte formulieren und ihre stärksten Gegenargumente untersuchen.
+## Wiederaufnahme
+CURRENT_WORK und Startnachweis prüfen. Keine abgeschlossenen Phasen aus alten Texten ableiten.
+Für den aktuellen Audit-Stand zuerst die fehlenden Belege und technischen Ausführungsnachweise herstellen.
+## Rollen
+Market Intelligence, Social Intelligence, Product Scientist, Auditor/Red Team und Builder sind Arbeitsrollen. Separat ausgeführte Agenten nur dann behaupten, wenn ihre Aufrufe und Ergebnisse vorliegen.
+## Erfolg
+Neue belegte Erkenntnisse oder ein tatsächlich ausgeführter Test. Anzahl von Dateien, Wortmenge und angenommene Laufdauer sind kein Erfolgsmaß.

@@ -53,3 +53,10 @@ Schwache Kandidaten beenden. Nur 1–2 Kandidaten mit tatsächlichen positiven V
 
 ## Research-Ausgabe
 Rohquellen und Interpretation getrennt speichern. Keine Quelle durch die Zusammenfassung ersetzen.
+
+## Präzisierung 2026-10-09
+- Zielmengen sind Richtwerte. Keine Duplikate oder Füllkonzepte zur Erfüllung einer Quote.
+- Jede Quellenbeobachtung benötigt URL/Dateipfad, Abrufzeit aus der Systemuhr und genaue Belegstelle.
+- Pro Opportunity: eindeutige ID, Quellen-IDs oder UNVERIFIED, Gegenargument, kleinster Test und Widerlegungskriterium.
+- Technische Machbarkeitstests dürfen früh stattfinden. Sie ersetzen keine Markt- oder Nutzervalidierung.
+- Fehlende globale Marktgrößen blockieren keinen kleinen lokalen Test. Nenne die entscheidungsrelevante Unsicherheit.

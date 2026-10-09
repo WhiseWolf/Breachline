@@ -1,3 +1,2 @@
-# Agent Logs
-
-Keep concise autonomous-agent handoffs, decisions, blockers, and human-input requests here. Do not commit private chain-of-thought or secrets.
+# Ältere Log-Ablage
+Aktive Arbeitsdokumentation liegt in ../logs/. Dieser Ordner enthält derzeit keine zweite aktive Fortsetzungsquelle.

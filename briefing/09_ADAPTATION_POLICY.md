@@ -57,3 +57,8 @@ Alle 10 signifikanten Entscheidungen oder spätestens nach einem größeren Arbe
 - Constitution erneut lesen,
 - GOAL erneut lesen,
 - prüfen, ob der aktuelle Plan noch dem Oberziel dient.
+
+## Messbarer Änderungsnachweis
+AGENT_CHANGES enthält ausschließlich konkrete Workflow-/Prompt-/Tool-/Runtime-Änderungen mit Baseline, Test und Rollback.
+Eine Projektplanung oder eine Liste künftiger Spielideen ist keine abgeschlossene Selbstverbesserung.
+Die Änderung einer JSON- oder Prompt-Datei beweist keine entsprechende Änderung des Runtime-Verhaltens.

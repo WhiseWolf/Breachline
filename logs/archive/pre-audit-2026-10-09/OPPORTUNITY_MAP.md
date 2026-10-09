@@ -1,14 +1,14 @@
 # OPPORTUNITY MAP — Browser Game Concepts (Phase 1)
 
-**Dokumentstand:** 2026-10-09 — externe Audit-Bereinigung
+**Datum:** Day 2 - Opportunity Mapping  
 **Budget:** ADDITIONAL_COST = 0.00 EUR  
-**Status:** UNVALIDATED CONCEPT DRAFTS  
+**Status:** In Progress  
 
 ---
 
 ## METHODOLOGIE
 
-Ungeprüfte Annahmen über mögliche Social-Hooks:
+Basierend auf erfolgreichen viralen Mustern:
 - Challenge/Mini-game Spiele mit steigender Schwierigkeit
 - Physik-basiertes Chaos mit emergenten Momenten
 - Horror/Surprise Elemente für Shareability
@@ -17,11 +17,9 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 
 ---
 
-## KONZEPTENTWÜRFE (1–18)
+## OPPORTUNITIES (1-20)
 
 ### 1. **Coin Dash Challenge**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Kurzweiliges Skill-Spiel mit sofortigem Erfolgserlebnis
 - **Zielgruppe:** 13-25 Jahre, TikTok-Nutzer, Casual Gamer
 - **Kern-Loop:** Münzen sammeln → Hindernisse umgehen → Bestzeit verbessern → Leaderboard
@@ -31,11 +29,9 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Monetarisierung:** Kosmetische Skins für Charaktere/Hindernisse
 - **Technische Komplexität:** Low (Canvas + einfache Physik)
 - **Gegenargumente:** Kann zu repetitiv werden ohne Content-Frische
-- **Evidenzqualität:** UNVERIFIED — keine überprüfbaren Fundstellen für die genannten Vergleichstitel
+- **Evidenzqualität:** Medium - Basierend auf Pumpkin Panic/Cowpocalypse Mustern
 
 ### 2. **Tower Rush Physics**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Physik-basiertes Klettern mit emergenten Lösungen
 - **Zielgruppe:** 10-30 Jahre, Puzzle-Liebhaber, Physik-Fans
 - **Kern-Loop:** Plattformen bauen → Gegner überwinden → neue Wege finden → Highscore
@@ -47,8 +43,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Level-Design aufwändig, Content-Frize nötig
 
 ### 3. **Pet Evolution Idle**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Sammeln und Züchten mit narrativem Fortschritt
 - **Zielgruppe:** 15-40 Jahre, Idle-Gamer, Sammler
 - **Kern-Loop:** Pet füttern → evolvieren → neue Pets finden → Community-Zucht
@@ -60,8 +54,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Idle-Games haben lange Zykluszeiten
 
 ### 4. **Rhythm Beat Challenge**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Musik-basiertes Timing-Spiel
 - **Zielgruppe:** 12-30 Jahre, Musik-Fans, Rhythm Game Fans
 - **Kern-Loop:** Noten treffen → Score erhöhen → Combo halten → Bestsong
@@ -73,8 +65,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Urheberrechte an Musik, Audio-Limits
 
 ### 5. **Zombie Survival Co-op**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Kurzweiliges Survival mit emergenten Taktiken
 - **Zielgruppe:** 16-35 Jahre, Shooter-Fans, Co-op Spieler
 - **Kern-Loop:** Zombies töten → Ressourcen sammeln → Basis verteidigen → Welle überstehen
@@ -86,8 +76,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Multiplayer kann technisch anspruchsvoll sein
 
 ### 6. **Merge Farm Idle**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Merge-Mechanik mit Idle-Elementen
 - **Zielgruppe:** 25-50 Jahre, Match3-Fans, Idle-Gamer
 - **Kern-Loop:** Pflanzen mergen → neue Arten freischalten → Auto-Ernte → Shop
@@ -99,8 +87,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Merge-Games haben hohe Retention-Ansprüche
 
 ### 7. **Parkour Dash Challenge**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Geschicklichkeits-basiertes Parkour-Spiel
 - **Zielgruppe:** 13-25 Jahre, Action-Fans, Mobile Gamer
 - **Kern-Loop:** Hindernisse umgehen → Zeit sparen → Bestzeit verbessern → Leaderboard
@@ -112,8 +98,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Kann zu repetitiv werden ohne neue Levels
 
 ### 8. **Horror Escape Room**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Kurzweiliges Horror-Escape mit Überraschungen
 - **Zielgruppe:** 16-35 Jahre, Horror-Fans, Puzzle-Liebhaber
 - **Kern-Loop:** Rätsel lösen → Zeit überstehen → Gegner vermeiden → Entkommen
@@ -125,8 +109,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Horror kann polarisierend sein
 
 ### 9. **Racing Stunt Challenge**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Physik-basiertes Racer mit Stunts
 - **Zielgruppe:** 12-30 Jahre, Racing-Fans, Action-Liebhaber
 - **Kern-Loop:** Rennen fahren → Stunts machen → Zeit sparen → Bestzeit
@@ -138,8 +120,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Vehicle Physics kann komplex sein
 
 ### 10. **Pet Battle Arena**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Sammel- und Kämpf-Spiel mit emergenten Taktiken
 - **Zielgruppe:** 15-35 Jahre, Pokémon-Fans, Strategy-Liebhaber
 - **Kern-Loop:** Pets sammeln → trainieren → kämpfen → Arena-Ranking
@@ -151,8 +131,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Battle Balance aufwändig zu halten
 
 ### 11. **Dungeon Crawler Idle**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Dungeon-Crawler mit Idle-Elementen
 - **Zielgruppe:** 18-40 Jahre, RPG-Fans, Idle-Gamer
 - **Kern-Loop:** Monster töten → Loot sammeln → Level verbessern → Boss bekämpfen
@@ -164,8 +142,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** RPGs haben hohe Content-Ansprüche
 
 ### 12. **Platformer Dash Challenge**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Geschicklichkeits-basiertes Platformer-Spiel
 - **Zielgruppe:** 10-30 Jahre, Action-Fans, Mobile Gamer
 - **Kern-Loop:** Plattformen erreichen → Hindernisse umgehen → Bestzeit verbessern
@@ -177,8 +153,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Kann zu repetitiv werden ohne neue Levels
 
 ### 13. **Tower Defense Strategy**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Tower Defense mit emergenten Taktiken
 - **Zielgruppe:** 16-40 Jahre, Strategy-Fans, Puzzle-Liebhaber
 - **Kern-Loop:** Türme platzieren → Wellen überstehen → Ressourcen optimieren → Bestscore
@@ -190,8 +164,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Strategy kann repetitiv werden
 
 ### 14. **Card Battle Arena**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Kartenspiel mit emergenten Taktiken
 - **Zielgruppe:** 15-35 Jahre, Card Game Fans, Strategy-Liebhaber
 - **Kern-Loop:** Karten sammeln → deck bauen → kämpfen → Ranking verbessern
@@ -203,8 +175,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Balance aufwändig zu halten
 
 ### 15. **Puzzle Escape Room**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Rätsel-basiertes Escape mit Story
 - **Zielgruppe:** 16-40 Jahre, Puzzle-Fans, Mystery-Liebhaber
 - **Kern-Loop:** Rätsel lösen → Hinweise finden → Zeit überstehen → Entkommen
@@ -216,8 +186,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Puzzle kann frustrierend sein
 
 ### 16. **Farming Sim Idle**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Farming-Sim mit Idle-Elementen
 - **Zielgruppe:** 20-50 Jahre, Simulation-Fans, Relax-Gamer
 - **Kern-Loop:** Pflanzen pflegen → ernten → verkaufen → erweitern
@@ -229,8 +197,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Sims haben hohe Content-Ansprüche
 
 ### 17. **Duel Arena Challenge**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** 1v1 Kämpfe mit Skill-Fokus
 - **Zielgruppe:** 15-30 Jahre, Fighting-Fans, Competitive Gamer
 - **Kern-Loop:** Gegner finden → kämpfen → verbessern → Ranking verbessern
@@ -242,8 +208,6 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Gegenargumente:** Multiplayer kann technisch anspruchsvoll sein
 
 ### 18. **Rhythm Dance Challenge**
-- **Validierungsstatus:** HYPOTHESIS; Zielgruppe, Social-Potenzial und Machbarkeit nicht gemessen.
-- **Belege:** Keine zugeordneten überprüften Quellen/Test-IDs im Snapshot.
 - **Problem/Bedürfnis:** Musik-basiertes Dance-Spiel
 - **Zielgruppe:** 12-30 Jahre, Music-Fans, Dance-Liebhaber
 - **Kern-Loop:** Beats treffen → Score erhöhen → Combo halten → Bestsong
@@ -254,9 +218,43 @@ Ungeprüfte Annahmen über mögliche Social-Hooks:
 - **Technische Komplexität:** Medium (Audio Processing + Timing Logic)
 - **Gegenargumente:** Urheberrechte an Musik
 
+### 19. **Zombie Survival Co-op**
+- **Problem/Bedürfnis:** Kurzweiliges Survival mit emergenten Taktiken
+- **Zielgruppe:** 16-35 Jahre, Shooter-Fans, Co-op Spieler
+- **Kern-Loop:** Zombies töten → Ressourcen sammeln → Basis verteidigen → Welle überstehen
+- **Warum Browser:** Multiplayer via WebSockets/PeerJS
+- **Social-/Clip-Potenzial:** High - "Epic Fail" und "Perfect Defense" Clips
+- **Retention-Hypothese:** Neue Wellen, Co-op Challenges mit Freunden
+- **Monetarisierung:** Kosmetische Waffen-Skins
+- **Technische Komplexität:** Medium (Multiplayer Sync + AI)
+- **Gegenargumente:** Multiplayer kann technisch anspruchsvoll sein
+
+### 20. **Merge Farm Idle**
+- **Problem/Bedürfnis:** Merge-Mechanik mit Idle-Elementen
+- **Zielgruppe:** 25-50 Jahre, Match3-Fans, Idle-Gamer
+- **Kern-Loop:** Pflanzen mergen → neue Arten freischalten → Auto-Ernte → Shop
+- **Warum Browser:** Persistente State im LocalStorage/Server
+- **Social-/Clip-Potenzial:** Medium - "Seltene Entdeckung!" Momente
+- **Retention-Hypothese:** Neue Pflanzen, seltene Evolutionspfade
+- **Monetarisierung:** Kosmetische Blumen/Skins
+- **Technische Komplexität:** Low-Medium (Merge Logic + Idle System)
+- **Gegenargumente:** Merge-Games haben hohe Retention-Ansprüche
+
 ---
 
-## Nächster Schritt
-CURRENT_WORK.md folgen. Erst Quellen-/Belegprüfung, dann begründete Auswahl.
+## OPPORTUNITIES (21-30) - ZU ERSTELLEN
 
-Originale Doppelungen 19 (wie 5) und 20 (wie 6) wurden entfernt; Original im Archiv.
+[Fortsetzung nach Bedarf]
+
+---
+
+## NEXT STEPS
+
+1. Erstelle weitere 10-10 Opportunities (21-30)
+2. Priorisiere auf 8-10 starke Hypothesen
+3. Designe low-cost concept tests für Top-Kandidaten
+4. Führe erste Social Concept Tests durch
+
+---
+
+*Last updated: Day 2 - Opportunity Mapping Phase*

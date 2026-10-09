@@ -30,3 +30,9 @@ Nur weiter, wenn Retention/Replays stabil erscheinen, Social-Clips organisch ver
 
 ## Kill Rule
 Eine Idee darf beendet werden. Beenden ist ein positives Ergebnis, wenn dadurch Zeit für bessere Kandidaten frei wird.
+
+## Nachweispflicht für Gates
+Jeder Gate-Übergang enthält Quellen-/Test-IDs, Gegenargumente, verbleibende Unsicherheit und eine konkrete Entscheidung.
+Ist die Evidenz nicht verfügbar, lautet der Status NOT_EVALUATED oder NOT_PASSED, nicht abgeschlossen.
+Ein technischer Spike zur Machbarkeit darf vor Gate A stattfinden, wenn er klein und reversibel ist. Daraus folgt keine Freigabe für einen größeren Produkt-Build.
+Bot-Replays, Views und simulierte Daten sind keine menschliche Retention.

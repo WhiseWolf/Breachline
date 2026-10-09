@@ -1,23 +1,16 @@
 # Autonomous Game Lab
-
-This branch is the autonomous agent workspace for browser-game research, validation, prototyping, and product development.
-
-## Mission
-Find and validate browser-game opportunities that can grow organically through TikTok, Instagram, and YouTube and can later be monetized sensibly.
-
-## Important
-- Breachline is one candidate, not a privileged conclusion.
-- Additional paid spend must remain EUR 0.00 unless a human explicitly changes that rule.
-- Separate facts, sources, hypotheses, interpretations, experiments, and decisions.
-- Prefer observed player behavior over stated preference.
-- Keep the public main branch stable; develop and document experiments here first.
-
-## Structure
-- `research/` — sourced market and audience research
-- `hypotheses/` — falsifiable product/growth hypotheses
-- `experiments/` — experiment plans and results
-- `prototypes/` — disposable playable prototypes
-- `game/` — promoted product code once evidence justifies it
-- `agent-logs/` — concise handoffs, decisions, blockers, and NEED_USER items
-
-Do not commit credentials, private system data, local model state, memory databases, Wi-Fi data, or private keys.
+Mission: browserbasierte Spielgelegenheiten finden, validieren und entwickeln; organisches Social-Wachstum; Zusatzkosten 0 EUR. Breachline ist ein Kandidat ohne Vorrang.
+## Kanonischer Dokumenteneinstieg
+briefing/00_README_FIRST.md, dann Constitution und Pflichtdateien aus briefing/agent_config.json.
+Aktiver Fortschritt: logs/CURRENT_WORK.md. Historische Logs unter logs/archive/ nicht als aktuelle Aufträge laden.
+## Struktur
+research/: tatsächliche Quellen und Abrufartefakte
+hypotheses/: falsifizierbare Hypothesen
+experiments/: ausgeführte Tests und Rohmesswerte
+prototypes/: kleine spielbare Kandidaten
+game/: Produktcode nach Evidence-Gates
+logs/: aktive Arbeitsdokumentation und Laufnachweise
+agent-logs/: ältere Ablage, kein zweiter aktiver Zustand
+## Lokal
+Offline-Briefings/Logs liegen derzeit außerhalb des Checkouts. Änderungen auf GitHub werden nicht automatisch vom lokalen Agenten gelesen; Synchronisierung explizit durchführen.
+Öffentlichen main-Branch stabil halten. Externe Veröffentlichung nur innerhalb belegbarer Freigaben. Keine Zugangsdaten/private Runtime-Daten in neue Commits.
