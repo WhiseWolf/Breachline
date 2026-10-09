@@ -23,5 +23,5 @@ Pflichtdateien aus agent_config.json lesen, Pfadauflösung aus 00_README_FIRST b
 Danach 10_AGENT_LOOP ausführen. Die aktive Mission FRESH_DISCOVERY_2026_10_09 startet ohne übernommene Ergebnisse. Frühere Audits sind historischer Kontext und kein neuer Auftrag.
 
 ## Neustart von Null — FRESH_DISCOVERY_2026_10_09
-Nur die aktiven Logs dieser Mission laden. Archive und frühere Memory-/Scheduler-Aufträge nicht in den neuen Startkontext übernehmen. Nicht alte Konzepte bestätigen oder die frühere 64-%-Behauptung weiterverfolgen.
+Nur die aktiven Logs dieser Mission laden. Archive und frühere Memory-/Scheduler-Aufträge nicht in den neuen Startkontext übernehmen. Keine früheren Kandidaten oder ungeprüften Behauptungen als Startaufgabe übernehmen.
 Ersten Auftrag ausschließlich aus logs/CURRENT_WORK.md übernehmen. Ein echter neuer lokaler Lauf muss nachgewiesen werden; GitHub-Dateireset allein setzt keine Runtime zurück.

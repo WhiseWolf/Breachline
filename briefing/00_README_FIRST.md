@@ -17,5 +17,11 @@ Lies logs/CURRENT_WORK.md. Historische Logs unter logs/archive/ sind keine aktiv
 Die Konfiguration beschreibt den gewünschten Vertrag. Ihre Existenz beweist nicht, dass der Runtime-Loader ihn implementiert.
 
 ## Neustart von Null — FRESH_DISCOVERY_2026_10_09
-Nur die aktiven Logs dieser Mission laden. Archive und frühere Memory-/Scheduler-Aufträge nicht in den neuen Startkontext übernehmen. Nicht alte Konzepte bestätigen oder die frühere 64-%-Behauptung weiterverfolgen.
+Nur die aktiven Logs dieser Mission laden. Archive und frühere Memory-/Scheduler-Aufträge nicht in den neuen Startkontext übernehmen. Keine früheren Kandidaten oder ungeprüften Behauptungen als Startaufgabe übernehmen.
 Ersten Auftrag ausschließlich aus logs/CURRENT_WORK.md übernehmen. Ein echter neuer lokaler Lauf muss nachgewiesen werden; GitHub-Dateireset allein setzt keine Runtime zurück.
+
+## Verbindlicher Startvertrag
+Startkontext gemäß start_context_order in agent_config.json; aktive Logs ausschließlich gemäß active_log_files. Pfade relativ zum aktiven Briefing-Verzeichnis.
+00_CONSTITUTION bleibt höchste Autorität. Einstieg nicht rekursiv laden.
+14_START_ACCEPTANCE.md beschreibt beobachtbare Kriterien für den ersten und zweiten Arbeitszyklus.
+Vor dem Erststart den neuen Stand einmal übernehmen. Nach begonnenen neuen Läufen aktive Logs nicht erneut durch leere GitHub-Startvorlagen ersetzen.

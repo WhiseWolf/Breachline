@@ -6,11 +6,11 @@ Stand: 2026-10-09. Beobachtungen stammen aus Terminalfotos und dem GitHub-Snapsh
 - Der Checkout liegt unter /home/pagi/breachline-agent/repo und war auf agent-lab.
 - Remote: git@github-breachline-agent:WhiseWolf/Breachline.git.
 - Der Dokumenten-Upload wurde in GitHub als Commit 1df8b6147b1c1bddd013d290abc0369c1da3dc99 bestätigt.
-- JARVIS_LIVE.log enthält Modellauswahl qwen3.5:9b-q4_K_M und eine Scheduler-Startmeldung.
+- Ein historischer Log im GitHub-Archiv enthält Modellauswahl qwen3.5:9b-q4_K_M und eine Scheduler-Startmeldung. Diese Beobachtung stammt aus der alten Mission und sagt nichts über den Neustart.
 ## Nicht nachgewiesen
 Aktuelle Hardware-/Treiberwerte, aktive Runtime-Konfiguration, Scheduler-Code, tatsächlich geladener Kontext, funktionierender Memory-Backend und vollständige Werkzeugtraces.
-Frühere Logs enthalten Memory-Warnungen. Deren heutiger Status ist unbekannt.
+Historische archivierte Logs enthalten Memory-Warnungen. Deren heutiger Status ist unbekannt. Archive nicht automatisch in die neue Mission laden.
 ## Betriebsregel
-Nicht Ubuntu neu installieren oder den funktionierenden Betrieb wegen alter Setup-Texte blockieren.
+Nicht Ubuntu neu installieren oder den bestehenden Betrieb wegen alter Setup-Texte blockieren.
 Prüfe nur die für die konkrete nächste Aufgabe erforderlichen Fähigkeiten. Ein allgemeiner Komplett-Setup-Check ist kein Fortschrittsnachweis.
 Briefing-Änderungen auf GitHub müssen vor Wirksamkeit in die vom lokalen Loader tatsächlich gelesenen Offline-Dateien übernommen werden.

@@ -1,8 +1,9 @@
 {
   "project": "Local Browser Game Discovery Agent",
-  "version": 2.1,
+  "version": 2.2,
   "primary_brief": "AGENT_BRIEFING_FULL.md",
   "required_context_files": [
+    "00_README_FIRST.md",
     "00_CONSTITUTION.md",
     "01_GOAL.md",
     "02_OPERATING_RULES.md",
@@ -16,7 +17,8 @@
     "10_AGENT_LOOP.md",
     "11_EVALUATION_SCORECARD.md",
     "12_EXECUTION_AND_EVIDENCE.md",
-    "13_AUTHORIZATIONS.md"
+    "13_AUTHORIZATIONS.md",
+    "14_START_ACCEPTANCE.md"
   ],
   "external_actions_require_user": true,
   "paid_services_allowed_without_approval": false,
@@ -54,7 +56,51 @@
     "briefing_paths": "relative to directory containing this config",
     "workspace": "parent of briefing directory",
     "logs": "<workspace>/logs",
-    "repo": "<workspace>/repo",
-    "enforcement": "descriptive; runtime loader implementation must be verified"
-  }
+    "repo": "Production layout only: <workspace>/repo. If validating the repo copy itself, do not append /repo again. Agent git operations use independently verified checkout.",
+    "enforcement": "descriptive; runtime loader implementation must be verified",
+    "log_paths": "Relative to directory containing this config; ../logs means sibling of briefing directory."
+  },
+  "external_actions_require_user_scope": "Only actions requiring approval under Constitution: public uploads/posts, account creation, payment, irreversible external actions, sensitive decisions and non-authorized system changes. Public read-only research does not require new approval.",
+  "paid_services_allowed": false,
+  "user_action_approval_overrides_budget": false,
+  "mission_id": "FRESH_DISCOVERY_2026_10_09",
+  "start_context_order": [
+    "MASTER_SYSTEM_PROMPT.md",
+    "00_CONSTITUTION.md",
+    "AGENT_BRIEFING_FULL.md",
+    "00_README_FIRST.md",
+    "01_GOAL.md",
+    "02_OPERATING_RULES.md",
+    "03_RESEARCH_PROTOCOL.md",
+    "04_EVIDENCE_AND_GATES.md",
+    "05_AUTONOMY_AND_ESCALATION.md",
+    "06_FIRST_RUN.md",
+    "07_CURRENT_HANDOFF.md",
+    "08_COST_AND_PREFLIGHT_POLICY.md",
+    "09_ADAPTATION_POLICY.md",
+    "10_AGENT_LOOP.md",
+    "11_EVALUATION_SCORECARD.md",
+    "12_EXECUTION_AND_EVIDENCE.md",
+    "13_AUTHORIZATIONS.md",
+    "14_START_ACCEPTANCE.md"
+  ],
+  "active_log_files": [
+    "../logs/MISSION_START.md",
+    "../logs/CURRENT_WORK.md",
+    "../logs/PROJECT_LOG.md",
+    "../logs/RESEARCH_LOG.md",
+    "../logs/SOURCES.md",
+    "../logs/OPPORTUNITY_MAP.md",
+    "../logs/DECISIONS.md",
+    "../logs/EXPERIMENTS.md",
+    "../logs/AGENT_CHANGES.md",
+    "../logs/COST_LEDGER.md",
+    "../logs/NEEDS_USER.md"
+  ],
+  "excluded_start_context": [
+    "../logs/archive/",
+    "../repo/logs/",
+    "historical scheduler outcomes",
+    "previous mission memory"
+  ]
 }

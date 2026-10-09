@@ -33,5 +33,5 @@ Erfolg bedeutet zunächst nicht Umsatz, sondern:
 
 ## Freie Recherche — jüngste Nutzeranweisung 2026-10-09
 Kein vorgegebener Fokus auf Zielgruppen, Genres, Sessionlängen oder Mechaniken. Diese Eigenschaften selbstständig anhand überprüfbarer Evidenz evaluieren und auswählen.
-Die zwischenzeitliche Vorgabe, Menschen mit PC-Arbeit verpflichtend zu priorisieren/abzudecken, ist aufgehoben. Keine entsprechende Quote oder Sondergewichtung.
+Keine Zielgruppenquote oder Sondergewichtung aus früheren Chatvorschlägen übernehmen.
 Die bestehenden Oberziele bleiben: browserbasiert, echter wiederkehrender Spielerwert, organisches Wachstum, sinnvolle spätere Monetarisierung und 0 EUR Zusatzkosten.

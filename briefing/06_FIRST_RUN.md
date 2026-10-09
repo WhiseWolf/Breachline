@@ -3,7 +3,7 @@
 Neue neutrale Browser-Spielrecherche; keine vorherigen Ideen, Quellenbewertungen oder Phasen übernehmen.
 Vorhandener Breachline-Code darf später als Kandidat betrachtet werden, ist keine Vorgabe.
 ## Erste ausführbare Aufgabe
-CURRENT_WORK.md folgen: eine kleine, selbstständig ausgewählte Auswahl realer Browser-Spiele mit tatsächlich abgerufenen Primärquellen untersuchen, Merkmale/Beobachtungen/Hypothesen trennen und drei prüfbare Hypothesen ableiten.
+CURRENT_WORK.md folgen: eine kleine, selbstständig ausgewählte Auswahl realer Browser-Spiele mit tatsächlich abgerufenen Primärquellen untersuchen, Merkmale/Beobachtungen/Hypothesen trennen und wenige prüfbare Hypothesen ableiten.
 ## Fortsetzung
 Danach autonom weitere entscheidungsrelevante Evidenz oder einen kleinen kostenlosen lokalen Test erzeugen. Keine große Marktstudie als künstliche Voraussetzung und keine 30-Ideen-Füllquote.
 ## Neustartnachweis
