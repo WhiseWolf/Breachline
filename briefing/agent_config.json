@@ -1,0 +1,45 @@
+{
+  "project": "Local Browser Game Discovery Agent",
+  "version": 2,
+  "primary_brief": "AGENT_BRIEFING_FULL.md",
+  "required_context_files": [
+    "01_GOAL.md",
+    "02_OPERATING_RULES.md",
+    "03_RESEARCH_PROTOCOL.md",
+    "04_EVIDENCE_AND_GATES.md",
+    "05_AUTONOMY_AND_ESCALATION.md",
+    "06_FIRST_RUN.md"
+  ],
+  "external_actions_require_user": true,
+  "paid_services_allowed_without_approval": false,
+  "constitution": "00_CONSTITUTION.md",
+  "authority_order": [
+    "00_CONSTITUTION.md",
+    "01_GOAL.md",
+    "08_COST_AND_PREFLIGHT_POLICY.md",
+    "02_OPERATING_RULES.md",
+    "05_AUTONOMY_AND_ESCALATION.md",
+    "09_ADAPTATION_POLICY.md"
+  ],
+  "budget": {
+    "currency": "EUR",
+    "additional_cost_limit": 0.0,
+    "hard_guardrail": true,
+    "agent_may_change": false,
+    "free_trials_with_cost_risk_allowed": false,
+    "paid_ads_allowed": false,
+    "paid_apis_allowed": false,
+    "additional_hardware_allowed": false
+  },
+  "adaptation": {
+    "enabled": true,
+    "immutable_files": [
+      "00_CONSTITUTION.md"
+    ],
+    "requires_baseline_test": true,
+    "requires_rollback_path": true,
+    "log_file": "logs/AGENT_CHANGES.md"
+  },
+  "runtime_loop": "10_AGENT_LOOP.md",
+  "scorecard": "11_EVALUATION_SCORECARD.md"
+}

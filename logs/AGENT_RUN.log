@@ -1,0 +1,19 @@
+  ___                       _                  _     
+ / _ \ _ __   ___ _ __     | | __ _ _ ____   _(_)___ 
+| | | | '_ \ / _ \ '_ \ _  | |/ _` | '__\ \ / / / __|
+| |_| | |_) |  __/ | | | |_| | (_| | |   \ V /| \__ \
+ \___/| .__/ \___|_| |_|\___/ \__,_|_|    \_/ |_|___/
+      |_|                                            
+      Personal AI, On Personal Devices
+
+WARNING openjarvis.security: Failed to set up rate limiter: No module named 'openjarvis_rust'
+WARNING openjarvis.cli.ask: Tool 'memory_store' was requested but no memory backend is available (default='sqlite'). The tool will load but return no results — downstream agents may answer without grounding.
+WARNING openjarvis.cli.ask: Tool 'memory_search' was requested but no memory backend is available (default='sqlite'). The tool will load but return no results — downstream agents may answer without grounding.
+  ___                       _                  _     
+ / _ \ _ __   ___ _ __     | | __ _ _ ____   _(_)___ 
+| | | | '_ \ / _ \ '_ \ _  | |/ _` | '__\ \ / / / __|
+| |_| | |_) |  __/ | | | |_| | (_| | |   \ V /| \__ \
+ \___/| .__/ \___|_| |_|\___/ \__,_|_|    \_/ |_|___/
+      |_|                                            
+      Personal AI, On Personal Devices
+

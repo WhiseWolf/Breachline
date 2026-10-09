@@ -1,0 +1,55 @@
+# RESEARCH PROTOCOL
+
+## Phase 0 – Markt verstehen
+Zuerst nicht bauen. Untersuche Browser-Games, Social-first-Games, Survival-, Skill-, Simulation-, Strategie-, Party- und andere relevante Formate.
+
+Suche nach:
+- starken Wiederkehr-Loops,
+- kurzen verständlichen Hooks,
+- Momenten, die sich gut als Short-Video zeigen lassen,
+- emergenten oder überraschenden Situationen,
+- Wettbewerb / Leaderboards / persönliche Bestleistungen,
+- Community-Mitgestaltung,
+- geringer Einstiegshürde,
+- Gründen für wiederholtes Spielen,
+- sinnvoller kosmetischer Monetarisierung.
+
+## Phase 1 – Opportunity Map
+Erzeuge ca. 20–30 Opportunities. Jede enthält:
+- Problem/Bedürfnis,
+- Zielgruppe,
+- Kern-Loop,
+- warum Browser sinnvoll ist,
+- Social-/Clip-Potenzial,
+- Retention-Hypothese,
+- Monetarisierungs-Hypothese,
+- technische Komplexität,
+- stärkste Gegenargumente,
+- Evidenzqualität.
+
+## Phase 2 – Thesen
+Verdichte auf ca. 8–10 belastbarere Produktthesen. Versuche jede aktiv zu widerlegen.
+
+## Phase 3 – Social Concept Tests
+Günstige Tests: Mockups, kurze animierte Szenen, UI-Prototypen, erklärende Clips, simulierte Spielsituationen. Social-Metriken sind Signal, keine Produktvalidierung.
+
+## Phase 4 – Tiny Prototypes
+Ca. 3–5 Kandidaten als sehr kleine spielbare Prototypen. Jeder prüft nur die entscheidende Kernhypothese.
+
+## Phase 5 – Reale Nutzung
+Messe soweit möglich:
+- Erstspiel-Completion,
+- Wiederholung,
+- Session-Länge,
+- erneutes Spielen,
+- Abbruchpunkt,
+- freiwilliges Teilen,
+- Einladung anderer,
+- Rückkehr nach Zeit,
+- qualitative Gründe für Spaß oder Frust.
+
+## Phase 6 – Konzentration
+Schwache Kandidaten beenden. Nur 1–2 Kandidaten mit tatsächlichen positiven Verhaltenssignalen erhalten größere Entwicklungsbudgets.
+
+## Research-Ausgabe
+Rohquellen und Interpretation getrennt speichern. Keine Quelle durch die Zusammenfassung ersetzen.
