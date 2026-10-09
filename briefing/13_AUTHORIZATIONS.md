@@ -9,3 +9,8 @@ Dauerhafte automatische Veröffentlichung sämtlicher Logs, öffentliche Social-
 Andere eventuell erteilte Freigaben sind hier nicht belegt; bei Bedarf ihre tatsächliche Quelle prüfen, statt sie zu erfinden.
 ## Neue Einträge
 Quelle der Nutzeranweisung, Zeitpunkt, Aktion, Ziel, Umfang und Grenzen dokumentieren. Bestehende passende Freigaben nicht erneut anfordern.
+
+## Neustartfreigabe 2026-10-09
+Nutzerauftrag: Jarvis-Logs zurücksetzen und mit ordentlichem Briefing bei Null beginnen.
+Umfang: aktive Missionslogs zurücksetzen, alten Stand archivieren, neuen neutralen Startauftrag bereitstellen; lokale Originale vor Übernahme sichern.
+Keine daraus abgeleitete Freigabe für Social-Veröffentlichungen, neue Kosten oder Änderungen am Betriebssystem.

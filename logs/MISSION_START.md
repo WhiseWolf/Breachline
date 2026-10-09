@@ -1,4 +1,7 @@
-# Mission — Kontext, kein Laufnachweis
-Auftrag: Browser-Spielgelegenheiten erforschen, validieren und entwickeln; organisches Social-Wachstum; Zusatzkosten 0 EUR.
-Aktueller Stand und nächster Auftrag: CURRENT_WORK.md.
-Dieses Dokument hat keinen bestätigten lokalen Startzeitpunkt. Neue reale Läufe erhalten Systemzeit/Run-ID und Manifest gemäß briefing/12_EXECUTION_AND_EVIDENCE.md.
+# Neue Mission
+ID: FRESH_DISCOVERY_2026_10_09
+Vorbereitet: 2026-10-09 durch externen GitHub-Auftrag.
+Tatsächlicher lokaler Start: NOT_STARTED.
+Ziel: browserbasierte Spielidee mit echtem Wiederkehrwert, organischem Social-Wachstum und später sinnvoller Monetarisierung; Zusatzkosten 0 EUR.
+Erster Auftrag: CURRENT_WORK.md.
+Startzeit und Run-ID erst beim echten lokalen Lauf aus der Systemuhr erzeugen.

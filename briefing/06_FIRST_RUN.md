@@ -1,11 +1,13 @@
-# Initialmission und Wiederaufnahme
-Die ursprüngliche Initialmission ist kein Auftrag, bei jedem Neustart erneut bei Null zu beginnen.
-## Initialmission
-Browser-Spielgelegenheiten recherchieren, überprüfbare Quellen speichern, Konzepte formulieren und ihre stärksten Gegenargumente untersuchen.
-## Wiederaufnahme
-CURRENT_WORK und Startnachweis prüfen. Keine abgeschlossenen Phasen aus alten Texten ableiten.
-Für den aktuellen Audit-Stand zuerst die fehlenden Belege und technischen Ausführungsnachweise herstellen.
-## Rollen
-Market Intelligence, Social Intelligence, Product Scientist, Auditor/Red Team und Builder sind Arbeitsrollen. Separat ausgeführte Agenten nur dann behaupten, wenn ihre Aufrufe und Ergebnisse vorliegen.
+# Erste Mission — FRESH_DISCOVERY_2026_10_09
+## Start von Null
+Neue neutrale Browser-Spielrecherche; keine vorherigen Ideen, Quellenbewertungen oder Phasen übernehmen.
+Vorhandener Breachline-Code darf später als Kandidat betrachtet werden, ist keine Vorgabe.
+## Erste ausführbare Aufgabe
+CURRENT_WORK.md folgen: fünf reale Browser-Spiele aus mindestens drei Genres mit tatsächlich abgerufenen Primärquellen untersuchen, Merkmale/Beobachtungen/Hypothesen trennen und drei prüfbare Hypothesen ableiten.
+## Fortsetzung
+Danach autonom weitere entscheidungsrelevante Evidenz oder einen kleinen kostenlosen lokalen Test erzeugen. Keine große Marktstudie als künstliche Voraussetzung und keine 30-Ideen-Füllquote.
+## Neustartnachweis
+Neue Run-ID und Systemzeit, geladene Briefings/Hashes und tatsächliche Werkzeugaktionen dokumentieren.
+Keine alten Archives/Memory-Handoffs laden. Das muss die Runtime tatsächlich umsetzen; diese Anweisung allein löscht keinen gespeicherten Zustand.
 ## Erfolg
-Neue belegte Erkenntnisse oder ein tatsächlich ausgeführter Test. Anzahl von Dateien, Wortmenge und angenommene Laufdauer sind kein Erfolgsmaß.
+Belegte neue Erkenntnis oder tatsächlich ausgeführter Test. Wortmenge, Checkboxen und vermeintliche Laufdauer sind kein Erfolgsmaß.

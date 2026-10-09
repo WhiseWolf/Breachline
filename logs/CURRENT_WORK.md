@@ -1,26 +1,19 @@
-# CURRENT WORK — aktive Audit-Baseline
-Dokumentstand: 2026-10-09. Aktualisiert durch den externen GitHub-Audit; kein lokaler Jarvis-Lauf.
+# CURRENT WORK — Neustart von Null
+Mission: FRESH_DISCOVERY_2026_10_09
+Status: NOT_STARTED. Extern vorbereitete Startdatei; kein Jarvis-Lauf bestätigt.
 ## Auftrag
-Browser-Spielidee finden, validieren und entwickeln; Breachline ist nicht bevorzugt; Zusatzkosten 0 EUR.
-## Nachgewiesener Stand
-- Briefings und 13 lokale Logs wurden auf agent-lab übertragen (Commit 1df8b6147b1c1bddd013d290abc0369c1da3dc99).
-- Eine Konzeptliste mit 18 unterschiedlichen Titeln liegt vor; sie ist unvalidiert.
-- Bestehender Spielcode liegt vor. Keine neuen Kandidaten-Prototypen oder Gameplay-Testnachweise im geprüften Snapshot.
-- Die hochgeladenen Laufzeitlogs sind unvollständig. Scheduler-Code und aktive Runtime-Konfiguration fehlen.
-## Nicht bestätigt
-Marktanalyse abgeschlossen; Phase 2/3 erreicht; Top-Kandidaten validiert; soziale Tests durchgeführt; Browser-Gameplay getestet; Retention gemessen; Kostenhistorie vollständig; Memory-Backend funktionierend.
-Frühere Statusbehauptungen bleiben im Archiv und werden nicht übernommen.
-## Einziger nächster Auftrag
-Eine konkrete Behauptung aus der bisherigen Recherche prüfen: die Behauptung zu 64 % mobiler Browser-Spielnutzung.
-1. Pflichtbriefings aus dem tatsächlichen aktiven Ordner lesen und Startmanifest mit Dateihashes erzeugen.
-2. Vorhandene Quellenlinks aus RESEARCH_LOG/SOURCES tatsächlich abrufen, Belegstelle und Systemzeit speichern.
-3. Zahl nur mit passendem Kontext (Population, Jahr, Methode) bestätigen; andernfalls ausdrücklich UNVERIFIED oder widerlegt dokumentieren. Nicht passende Quellen nicht als Beleg verwenden.
-4. Gegenprüfung und Entscheidung speichern, CURRENT_WORK aktualisieren.
-Wenn Webabruf nicht möglich ist: tatsächlichen Fehler dokumentieren, erlaubtes kostenloses Werkzeug prüfen/installieren oder einen unabhängigen lokalen Test ausführen.
-## Danach
-Weitere entscheidungsrelevante Aussagen prüfen; deduplizierte Ideen mit echten Quellen verbinden; kleinsten lokalen Machbarkeitstest für einen begründeten Kandidaten durchführen.
-Kein Auffüllen auf 30 Ideen als Selbstzweck. Kein größerer Build vor den Gates.
-## Blocker
-Kein belegter aktueller NEEDS_USER. Kein Laufzeit- oder Veröffentlichungsstatus aus diesem Dokument ableitbar.
-## Synchronisierung
-GitHub-Dateien sind Kopien. Die Bereinigung wird auf Ubuntu erst wirksam, nachdem Briefings in den tatsächlich gelesenen Offline-Ordner übernommen wurden. Aktuelle lokale Logs vor einer Übernahme sichern und vergleichen; keine neuen Arbeitsergebnisse blind überschreiben.
+Browser-Spielgelegenheiten neutral recherchieren und später validieren/entwickeln. Breachline und vorhandener Spielcode bekommen keinen Vorrang. Zusatzkostenlimit 0,00 EUR.
+## Aktueller Erkenntnisstand
+Keine Quellen abgerufen, keine Kandidaten ausgewählt, keine Experimente durchgeführt und keine Phasen abgeschlossen in dieser neuen Mission.
+Frühere Ergebnisse und Archive sind nicht Bestandteil des Startkontexts.
+## Erster konkreter Arbeitszyklus
+1. Constitution und alle Pflichtdateien aus agent_config.json im tatsächlich aktiven Offline-Briefing-Ordner lesen. Startmanifest mit Systemzeit, Run-ID und Dateihashes schreiben.
+2. Fünf unterschiedliche tatsächlich im Browser spielbare Vergleichsspiele aus mindestens drei Genres recherchieren. Nachvollziehbare Primärquellen (Spiel-/Entwicklerseiten) tatsächlich abrufen; URL, Abrufzeit, Belegstelle und Rohartefakt speichern.
+3. Pro Spiel unterscheiden: dokumentierte Produktmerkmale, selbst beobachtetes Verhalten und ungetestete Interpretation. „Erfolgreich/viral“ nur bei passenden Belegen behaupten.
+4. Drei prüfbare Nutzerwert-/Replay-/Social-Hypothesen mit Gegenargument und kleinstem kostenlosem Test ableiten.
+5. Quellen gegenprüfen, tatsächliche Ergebnisse protokollieren, CURRENT_WORK auf den nächsten konkreten Schritt aktualisieren und autonom fortsetzen.
+Wenn ein Werkzeug fehlt: vorhandene Fähigkeit prüfen, kostenlose projektlokale Alternative selbst installieren und testen. Ein tatsächlicher Login-/Rechteblocker darf andere unabhängige Schritte nicht blockieren.
+## Grenzen
+Keine öffentliche Veröffentlichung ohne passende belegte Freigabe. Kein größerer Build vor Evidence-Gates. Keine künstliche Konzeptquote.
+## Wiederaufnahme
+Bei späteren Starts nur Logs dieser Mission übernehmen. Archives, alte Memory-/Scheduler-Zustände und alte Aufgaben nicht als aktiven Auftrag behandeln. Runtime-Zustand muss auf Ubuntu separat geprüft werden; Dateireset allein beweist keine neue Session.

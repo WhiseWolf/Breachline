@@ -15,3 +15,7 @@ Dokumentiere erfolgreiche Lesevorgänge und Dateihashes im Laufnachweis. Fehlt e
 ## Fortsetzung
 Lies logs/CURRENT_WORK.md. Historische Logs unter logs/archive/ sind keine aktiven Aufträge und keine bestätigten Forschungsergebnisse.
 Die Konfiguration beschreibt den gewünschten Vertrag. Ihre Existenz beweist nicht, dass der Runtime-Loader ihn implementiert.
+
+## Neustart von Null — FRESH_DISCOVERY_2026_10_09
+Nur die aktiven Logs dieser Mission laden. Archive und frühere Memory-/Scheduler-Aufträge nicht in den neuen Startkontext übernehmen. Nicht alte Konzepte bestätigen oder die frühere 64-%-Behauptung weiterverfolgen.
+Ersten Auftrag ausschließlich aus logs/CURRENT_WORK.md übernehmen. Ein echter neuer lokaler Lauf muss nachgewiesen werden; GitHub-Dateireset allein setzt keine Runtime zurück.
