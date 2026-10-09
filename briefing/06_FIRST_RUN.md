@@ -11,3 +11,7 @@ Neue Run-ID und Systemzeit, geladene Briefings/Hashes und tatsächliche Werkzeug
 Keine alten Archives/Memory-Handoffs laden. Das muss die Runtime tatsächlich umsetzen; diese Anweisung allein löscht keinen gespeicherten Zustand.
 ## Erfolg
 Belegte neue Erkenntnis oder tatsächlich ausgeführter Test. Wortmenge, Checkboxen und vermeintliche Laufdauer sind kein Erfolgsmaß.
+
+## Verbindlicher Zielgruppenvergleich
+Unter den fünf Vergleichsspielen mindestens zwei auf kurze/unterbrechbare Nutzung für Menschen mit PC-Arbeit prüfen.
+Eine der drei ersten Hypothesen muss diesen Nutzungskontext ausdrücklich betreffen. Nachfrage und Retention nicht behaupten, bevor passende Evidenz vorliegt.
