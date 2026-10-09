@@ -8,9 +8,9 @@ Keine Quellen abgerufen, keine Kandidaten ausgewählt, keine Experimente durchge
 Frühere Ergebnisse und Archive sind nicht Bestandteil des Startkontexts.
 ## Erster konkreter Arbeitszyklus
 1. Constitution und alle Pflichtdateien aus agent_config.json im tatsächlich aktiven Offline-Briefing-Ordner lesen. Startmanifest mit Systemzeit, Run-ID und Dateihashes schreiben.
-2. Fünf unterschiedliche tatsächlich im Browser spielbare Vergleichsspiele aus mindestens drei Genres recherchieren. Mindestens zwei gezielt auf kurze oder unterbrechbare Nutzung für Menschen mit PC-Arbeit prüfen (Eignung zunächst Hypothese). Nachvollziehbare Primärquellen (Spiel-/Entwicklerseiten) tatsächlich abrufen; URL, Abrufzeit, Belegstelle und Rohartefakt speichern.
+2. Selbstständig eine kleine, informative Auswahl tatsächlich im Browser spielbarer Vergleichsspiele recherchieren. Zielgruppen, Genres und Sessionlängen ohne Vorzugsgewicht untersuchen; Auswahl nach Erkenntniswert begründen. Nachvollziehbare Primärquellen (Spiel-/Entwicklerseiten) tatsächlich abrufen; URL, Abrufzeit, Belegstelle und Rohartefakt speichern.
 3. Pro Spiel unterscheiden: dokumentierte Produktmerkmale, selbst beobachtetes Verhalten und ungetestete Interpretation. „Erfolgreich/viral“ nur bei passenden Belegen behaupten.
-4. Drei prüfbare Nutzerwert-/Replay-/Social-Hypothesen mit Gegenargument und kleinstem kostenlosem Test ableiten. Mindestens eine betrifft Menschen mit PC-Arbeit: kurze Pausen, geringe Aufmerksamkeit oder Wiederaufnahme nach Unterbrechung. Mit Freizeitnutzung vergleichen.
+4. Aus den Beobachtungen wenige prüfbare Nutzerwert-/Replay-/Social-Hypothesen mit Gegenargument und kleinstem kostenlosem Test ableiten. Keine Zielgruppe, Mechanik, Sessionlänge oder Mengenquote vorgeben.
 5. Quellen gegenprüfen, tatsächliche Ergebnisse protokollieren, CURRENT_WORK auf den nächsten konkreten Schritt aktualisieren und autonom fortsetzen.
 Wenn ein Werkzeug fehlt: vorhandene Fähigkeit prüfen, kostenlose projektlokale Alternative selbst installieren und testen. Ein tatsächlicher Login-/Rechteblocker darf andere unabhängige Schritte nicht blockieren.
 ## Grenzen

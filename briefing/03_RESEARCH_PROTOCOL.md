@@ -61,12 +61,7 @@ Rohquellen und Interpretation getrennt speichern. Keine Quelle durch die Zusamme
 - Technische Machbarkeitstests dürfen früh stattfinden. Sie ersetzen keine Markt- oder Nutzervalidierung.
 - Fehlende globale Marktgrößen blockieren keinen kleinen lokalen Test. Nenne die entscheidungsrelevante Unsicherheit.
 
-## Zielgruppe: Menschen mit PC-Arbeit
-In der frühen Recherche explizit abdecken:
-1. kurze aktive Pause mit Abschlussgefühl;
-2. asynchrone/unterbrechbare Nutzung zwischen Aufgaben;
-3. Vergleich zu längerer Freizeitsession.
-Mindestens zwei der ersten fünf Vergleichsspiele auf mögliche kurze oder unterbrechbare Nutzung untersuchen. Eignung nicht aus Popularität ableiten.
-Je Konzept: Nutzungssituation, verfügbare Aufmerksamkeit, Sessionlänge, Unterbrechbarkeit, Rückkehr nach Tabwechsel, Tonbedarf und Geräteanforderungen dokumentieren.
-Bei Tests: Zeit bis erster sinnvoller Aktion, Abschluss in kurzer Pause, Wiederaufnahme nach Unterbrechung, Ressourcenlast und freiwillige Rückkehr messen. Tests mit echten Angehörigen dieser Zielgruppe getrennt von Bot-Tests und Freizeitspielern auswerten.
-Nicht ungeprüft annehmen, dass Idle-Games oder Casual Games automatisch zu PC-Arbeit passen.
+
+## Keine vorgegebene Segmentpriorität
+Zielgruppen, Genres, Sessionlängen und Nutzungssituationen eigenständig erforschen. Keine verpflichtende Büro-/PC-Arbeit-Quote, kein bevorzugtes Freizeitsegment und kein festgelegtes Spielgenre.
+Vergleichsprodukte nach erwartbarem Erkenntnisgewinn wählen; Entscheidungen mit Evidenz und Gegenargumenten begründen.
