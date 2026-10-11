@@ -183,6 +183,13 @@ dürfen zwischen Versionen variieren. Unbekannte Ausführungsänderungen, Timeou
 fehlende Rückgabe, fremder Artefaktpfad oder weitere unklare
 Host-/Shell-/Social-Aktion bleibt gesperrt. Es wird kein Container ausgeführt.
 
+Die Fingerprints nutzen portable-v1: einen eigenen AST-Serializer mit einheitlicher
+Behandlung leerer Felder. Das behebt die reproduzierte Fehlablehnung unter Python
+3.13/3.14, deren ast.dump standardmäßig leere Listen auslässt. Die geprüften
+Konstruktor-/execute-Inhalte und das Isolationskriterium bleiben maßgeblich.
+Die Review-Datei nennt das verwendete Format. Regressionen laufen unter Python
+3.12, 3.13 und 3.14 mit demselben offiziellen Methodenfixture.
+
 Die Prüfung schreibt isolated_action_review.json mit Quelldigest, Ergebnisdigest,
 Original-Receipt-Digest und geprüften Aktionen. Originale Manifeste, Ergebnisse
 und action_receipts.json bleiben unverändert. Der nächste Zyklus erhält den

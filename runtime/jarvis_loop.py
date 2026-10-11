@@ -53,9 +53,30 @@ READ_ONLY_TOOLS = {"file_read", "git_status", "git_diff", "git_log", "web_search
 # Container-scoped tools are not the host project's filesystem/shell tools.
 HOST_INCOMPATIBLE_TOOLS = {"code_interpreter_docker", "docker_shell_exec"}
 DOCKER_METHOD_AST_SHA256 = {
-    "__init__": "c9836cc7fab3aff106acae7cf3c0fd30b24ed8690171cb1ced2a8dac8caabb34",
-    "execute": "a639dd5013be79a08a40d12c42594d6e0b067e3a8625dcb1fe8256d8d9eed9de",
+    "__init__": "d34b233fd04988ff052a0a378143fb3b206342d62c42ec86b364e062f00962d0",
+    "execute": "5de021bdfafc3d14eadc62ec1768b57a74e64992359e48876cbf77fc9a7d7842",
 }
+
+
+def portable_ast_dump(node):
+    """Canonical AST format independent of ast.dump's Python 3.13 defaults.
+
+    Empty list fields and optional None fields carry no extra AST content.
+    Constant(None) is meaningful and is always retained. Nonempty fields,
+    including type parameters and keyword arguments, remain in the digest.
+    """
+    if isinstance(node, ast.AST):
+        fields = []
+        for name, value in ast.iter_fields(node):
+            if isinstance(value, list) and not value:
+                continue
+            if value is None and not (isinstance(node, ast.Constant) and name == "value"):
+                continue
+            fields.append(f"{name}={portable_ast_dump(value)}")
+        return f"{type(node).__name__}(" + ", ".join(fields) + ")"
+    if isinstance(node, list):
+        return "[" + ", ".join(portable_ast_dump(value) for value in node) + "]"
+    return repr(node)
 
 
 def ast_fingerprint(node):
@@ -65,7 +86,7 @@ def ast_fingerprint(node):
         if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             if item.body and isinstance(item.body[0], ast.Expr) and isinstance(item.body[0].value, ast.Constant) and isinstance(item.body[0].value.value, str):
                 item.body.pop(0)
-    return digest(ast.dump(node, include_attributes=False).encode())
+    return digest(portable_ast_dump(node).encode())
 
 
 def default_docker_factory(factory):
@@ -135,7 +156,7 @@ def isolated_docker_proof():
             if actual != expected:
                 raise ValueError(f"Docker {method} differs: AST SHA256 {actual}; source {source_path}")
         factory_fingerprint = default_docker_factory(_build_tools)
-        return {"method_ast_sha256": fingerprints,
+        return {"ast_format": "portable-v1", "method_ast_sha256": fingerprints,
                 "tool_factory_ast_sha256": factory_fingerprint,
                 "source": str(source_path),
                 "basis": "audited constructor and execution, default construction: no host mounts, no network"}

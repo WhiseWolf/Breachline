@@ -464,6 +464,57 @@ class RecoveryTests(unittest.TestCase):
         with self.assertRaises(loop.UnsafeRecoveryError):
             ledger.check()
 
+    def test_portable_ast_does_not_depend_on_runtime_dump_defaults(self):
+        node = loop.ast.parse("def f():\n    return None").body[0]
+        expected = loop.ast_fingerprint(node)
+        node.type_params = []
+        with patch.object(loop.ast, "dump", side_effect=AssertionError("runtime formatting must not be used")):
+            self.assertEqual(loop.ast_fingerprint(node), expected)
+        self.assertIn("Constant(value=None)", loop.portable_ast_dump(node))
+        for changed in ["def f():\n    return False", "def f():\n    mount_host()\n    return None"]:
+            self.assertNotEqual(loop.ast_fingerprint(loop.ast.parse(changed).body[0]), expected)
+        node.type_params = [loop.ast.Name(id="T", ctx=loop.ast.Load())]
+        self.assertNotEqual(loop.ast_fingerprint(node), expected)
+
+    def test_screenshot_source_hash_recovers_with_real_audited_method_fixture(self):
+        fixture = Path(__file__).with_name("fixtures") / "docker_isolation_methods.txt"
+        methods = {n.name: n for n in loop.ast.parse(fixture.read_text()).body if isinstance(n, loop.ast.FunctionDef)}
+        self.assertEqual(loop.ast_fingerprint(methods["__init__"]),
+                         "d34b233fd04988ff052a0a378143fb3b206342d62c42ec86b364e062f00962d0")
+        for name, expected in loop.DOCKER_METHOD_AST_SHA256.items():
+            self.assertEqual(loop.ast_fingerprint(methods[name]), expected)
+        init, execute = Mock(), Mock()
+        cls = type("DockerCodeInterpreterTool", (), {"__init__": init, "execute": execute})
+        factory = SimpleNamespace(__globals__={})
+        sources = {id(init): loop.ast.unparse(methods["__init__"]),
+                   id(execute): loop.ast.unparse(methods["execute"]),
+                   id(factory): 'def _build_tools(tool_names):\n    tools = []\n    for name in tool_names:\n        name = name.strip()\n        tool_cls = ToolRegistry.get(name)\n        tools.append(tool_cls())\n    return tools\n'}
+        modules = {"openjarvis": SimpleNamespace(tools=SimpleNamespace()),
+                   "openjarvis.tools": SimpleNamespace(),
+                   "openjarvis.core.registry": SimpleNamespace(ToolRegistry=SimpleNamespace(get=lambda name: cls)),
+                   "openjarvis.tools.code_interpreter_docker": SimpleNamespace(DockerCodeInterpreterTool=cls),
+                   "openjarvis.cli.ask": SimpleNamespace(_build_tools=factory)}
+        run, _ = self.isolated_old_run()
+        originals = {p.name: p.read_bytes() for p in run.iterdir()}
+        with patch.dict(sys.modules, modules), \
+             patch.object(loop.inspect, "getfile", return_value=str(fixture)), \
+             patch.object(loop.inspect, "getsource", side_effect=lambda obj: sources[id(obj)]):
+            loop.check_previous_run(self.root)
+            proof = json.loads((run / "isolated_action_review.json").read_text())["implementation"]
+            self.assertEqual(proof["ast_format"], "portable-v1")
+            self.assertEqual(proof["method_ast_sha256"], loop.DOCKER_METHOD_AST_SHA256)
+            sources[id(init)] = sources[id(init)].replace("network_disabled: bool=True", "network_disabled: bool=False")
+            self.assertIsNone(loop.isolated_docker_proof())
+            sources[id(init)] = loop.ast.unparse(methods["__init__"])
+            sources[id(execute)] = sources[id(execute)].replace("network_disabled=self._network_disabled", "network_disabled=False")
+            self.assertIsNone(loop.isolated_docker_proof())
+            with self.assertRaises(loop.UnsafeRecoveryError):
+                loop.check_previous_run(self.root)
+        init.assert_not_called()
+        execute.assert_not_called()
+        for name, content in originals.items():
+            self.assertEqual((run / name).read_bytes(), content)
+
     def test_factory_accepts_default_docker_path_across_unused_branch_versions(self):
         factories = [
             'def _build_tools(tool_names):\n    tools = []\n    for name in tool_names:\n        name = name.strip()\n        if not name:\n            continue\n        if not ToolRegistry.contains(name):\n            continue\n        tool_cls = ToolRegistry.get(name)\n        tools.append(tool_cls())\n    return tools\n',
