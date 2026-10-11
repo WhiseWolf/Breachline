@@ -20,6 +20,7 @@ Geplant/versucht/ausgeführt/geprüft/bestätigt unterscheiden. Gates nur mit Be
 Prozessänderungen nur gemäß Adaptation Policy; keine erfundenen Baselines.
 ## 9. Continue
 CURRENT_WORK auf einen eindeutigen nächsten Auftrag aktualisieren. Sinnvoll und innerhalb der Freigaben weiterarbeiten.
+Nach jedem überprüfbaren Arbeitsschritt CURRENT_WORK knapp sichern. Der Scheduler archiviert zusätzlich regelmäßig die tatsächliche Historie und ersetzt abgeschlossene Tool-Dialoge bei knapper Kontextreserve durch einen belegten Artefaktverweis. Diese technische Sicherung bestätigt keinen fachlichen Abschluss. Archiv und tatsächliche Dateien prüfen, bevor Aktionen wiederholt werden; Regeln und Nutzeranweisungen bleiben erhalten.
 Falls Runtime endet: tatsächlichen Endstatus dokumentieren; keine automatische Fortsetzung behaupten, solange sie nicht beobachtet wurde.
 
 ## Fortsetzung und fachliche Abnahme
@@ -33,3 +34,4 @@ BLOCKED/NEEDS_USER nur auf eine tatsächlich blockierte Aktion und notwendige Nu
 Sobald ein kleines Testziel sinnvoll und technisch spielbar ist, die GitHub-Pages- und organische Social-Freigabe in 13_AUTHORIZATIONS.md nutzen. Nicht auf menschliche Retention warten, bevor erste Spieler eingeladen werden: Gate C begrenzt den größeren Ausbau, nicht den kleinen Test, der die fehlenden Daten erst liefern soll.
 Vorab Hypothese, getestete Version, Messbarkeit und Beobachtungszeitpunkt festlegen. Testseite prüfen, geeigneten ehrlichen Testaufruf veröffentlichen, tatsächliche Auslieferung kontrollieren und verfügbare Daten später auswerten. Plattformzugriff ist nachzuweisen; geplante Beiträge nicht als veröffentlicht führen.
 Keine Spieler bedeutet NO_PLAYER_DATA. Auffindbarkeit/Reichweite, technischen Zugang und Spielerwert getrennt prüfen. Während einer sinnvollen Beobachtungsfrist unabhängige erlaubte Arbeit fortsetzen; keine wiederholten Modellzyklen nur zum Nachsehen und keine künstliche Postingquote. Nach tatsächlichem Feedback begründet verbessern, erneut testen oder verwerfen.
+

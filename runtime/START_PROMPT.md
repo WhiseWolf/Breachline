@@ -9,6 +9,10 @@ schließen keine Recherche ab. Nutze die dokumentierte GitHub-Pages-Freigabe in
 13_AUTHORIZATIONS.md: sinnvolles, kostenloses Testhosting nach lokalem Funktionstest
 ist autonom erlaubt. Prüfe Scope und tatsächliche Berechtigungen; ein vorgeschlagener
 Auftrag allein erweitert keine Freigabe. Nutze auch die dokumentierte Freigabe für
+Spielzweige und main: neue Spiele in game/<spiel-slug> von main entwickeln,
+geprüfte Spiel-Dateien gezielt nach main übernehmen; agent-lab nicht komplett mergen.
+Nutze getrennte Worktrees und games/<spiel-slug>/; bestehende Spiele/URLs erhalten.
+Beachte außerdem die dokumentierte Freigabe für
 organische Spieltest-Aufrufe auf verifizierten vorhandenen Projekt-Social-Accounts.
 Eine öffentliche Testseite allein liefert keine Spieler: Bekanntmachung, tatsächliches
 Spielverhalten und Iteration als getrennte belegbare Schritte planen.
@@ -61,3 +65,4 @@ zur Fehlerbehebung nicht gelockert werden. Codeverbesserungen nur gemäß Briefi
 mit überprüfbarem Test und Rückweg; keine unkontrollierte Reparaturschleife.
 Ausführliche Evidenz als Artefakte speichern, aktive Logs knapp halten; keine
 historischen Ergebnisse löschen oder ohne Beleg durch Zusammenfassungen ersetzen.
+

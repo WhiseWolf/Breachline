@@ -120,6 +120,60 @@ class ContextTests(unittest.TestCase):
         self.assertIs(recorder.compact_outputs([rules, task], 128)[0], rules)
         self.assertEqual(recorder.compact_outputs([rules, task], 128)[1].content, task.content)
 
+    def test_repeated_rolls_keep_rules_and_archive_settled_tool_history(self):
+        engine = SimpleNamespace(generate=Mock(return_value={"content": "ok"}))
+        run = self.root / "logs/runs/rolling"
+        run.mkdir(parents=True)
+        recorder = loop.RecordingEngine(engine, run, 4000, 256)
+        rules = SimpleNamespace(role="system", content="IMMUTABLE RULES")
+        task = SimpleNamespace(role="user", content="ACTIVE TASK")
+        messages = [rules, task]
+        recorder.generate(messages)
+        for i in range(24):
+            messages.append(SimpleNamespace(role="assistant", content="Inspect actual result " + str(i),
+                                            tool_calls=[{"id": str(i), "name": "file_read"}]))
+            messages.append(SimpleNamespace(role="tool", content="DATA " * 700,
+                                            tool_call_id=str(i)))
+            recorder.generate(messages)
+        self.assertEqual(engine.generate.call_count, 25)
+        self.assertIs(messages[0], rules)
+        self.assertIs(messages[1], task)
+        self.assertLess(len(messages), 16)
+        self.assertIn("SCHEDULER_CHECKPOINT", (self.root / "logs/CURRENT_WORK.md").read_text())
+        archives = list(run.glob("checkpoint-*.json"))
+        self.assertGreater(len(archives), 3)
+        self.assertIn("DATA", " ".join(p.read_text() for p in archives))
+
+    def test_roll_never_drops_new_user_instructions_or_pending_protocol(self):
+        engine = SimpleNamespace(generate=Mock(return_value={"content": "ok"}))
+        recorder = loop.RecordingEngine(engine, self.root, 32768, 2048)
+        messages = [SimpleNamespace(role="user", content="RULES")]
+        recorder.generate(messages)
+        instruction = SimpleNamespace(role="user", content="NEW USER CONSTRAINT")
+        messages.extend([instruction, SimpleNamespace(role="assistant", content="Plan",
+                         tool_calls=[{"id": "pending"}])])
+        self.assertFalse(recorder.roll_history(messages, "test"))
+        self.assertEqual(recorder.checkpoints, 0)
+        messages.append(SimpleNamespace(role="tool", content="done", tool_call_id="pending"))
+        self.assertTrue(recorder.roll_history(messages, "test"))
+        self.assertIs(messages[1], instruction)
+        self.assertIsNone(messages[-1].tool_calls)
+
+    def test_periodic_checkpoint_does_not_require_model_file_write(self):
+        run = self.root / "logs/runs/periodic"
+        run.mkdir(parents=True)
+        recorder = loop.RecordingEngine(SimpleNamespace(generate=lambda *a, **k: {"content": "ok"}),
+                                        run, 32768, 2048)
+        messages = [SimpleNamespace(role="user", content="RULES")]
+        for i in range(5):
+            recorder.generate(messages)
+        self.assertEqual(recorder.checkpoints, 1)
+        text = (self.root / "logs/CURRENT_WORK.md").read_text()
+        self.assertIn("NOT_STARTED", text)
+        self.assertIn("periodic", text)
+        recorder.checkpoint(messages, "next")
+        self.assertEqual((self.root / "logs/CURRENT_WORK.md").read_text().count("<!-- SCHEDULER_CHECKPOINT -->"), 1)
+
 
 class ToolSelectionTests(unittest.TestCase):
     def registry(self, *extra):
@@ -311,15 +365,15 @@ class CycleIntegrationTests(unittest.TestCase):
     setUp = ContextTests.setUp
     write_contract = ContextTests.write_contract
 
-    def test_main_pauses_after_three_consecutive_context_handoffs(self):
+    def test_main_continues_after_three_consecutive_context_handoffs(self):
         with patch.object(sys, "argv", ["jarvis_loop", "--workspace", str(self.root)]), \
              patch.object(loop, "check_previous_run"), \
-             patch.object(loop, "run_cycle", return_value="CONTEXT_HANDOFF") as cycle, \
+             patch.object(loop, "run_cycle", side_effect=["CONTEXT_HANDOFF"] * 4 + [KeyboardInterrupt()]) as cycle, \
              patch.object(loop.time, "sleep") as sleep, \
              patch.object(loop.os, "chdir"), patch.object(loop.signal, "signal"):
             loop.main()
-        self.assertEqual(cycle.call_count, 3)
-        self.assertEqual(sleep.call_count, 2)
+        self.assertEqual(cycle.call_count, 5)
+        self.assertEqual(sleep.call_count, 4)
 
     def test_two_cycles_reload_handoff_and_retry_model_without_replaying_actions(self):
         self.exercise_cycles()
@@ -409,3 +463,4 @@ class CycleIntegrationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

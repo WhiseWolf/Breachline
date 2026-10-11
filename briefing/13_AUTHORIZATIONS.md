@@ -5,7 +5,7 @@ Stand: 2026-10-11. Dieses Dokument erweitert die Constitution nicht.
 - Nutzer hat die Bereinigung/Anpassung falscher oder irreführender Briefing- und Log-Dateien auf GitHub angewiesen.
 - Ziel für diese Arbeit: agent-lab. Kosten: 0 EUR.
 ## Nicht daraus ableitbar
-Dauerhafte automatische Veröffentlichung sämtlicher Logs, öffentliche Social-Posts außerhalb der nachfolgend dokumentierten Spieltest-Freigabe, neue Konten, Spiel-Deployments außerhalb der nachfolgend dokumentierten GitHub-Pages-Freigabe, Änderung von main oder kostenpflichtige Dienste.
+Dauerhafte automatische Veröffentlichung sämtlicher Logs, öffentliche Social-Posts außerhalb der nachfolgend dokumentierten Spieltest-Freigabe, neue Konten, Spiel-Deployments außerhalb der nachfolgend dokumentierten GitHub-Pages-Freigabe, main-Änderungen außerhalb der folgenden Spielcode-Freigabe oder kostenpflichtige Dienste.
 Andere eventuell erteilte Freigaben sind hier nicht belegt; bei Bedarf ihre tatsächliche Quelle prüfen, statt sie zu erfinden.
 ## Neue Einträge
 Quelle der Nutzeranweisung, Zeitpunkt, Aktion, Ziel, Umfang und Grenzen dokumentieren. Bestehende passende Freigaben nicht erneut anfordern.
@@ -22,7 +22,7 @@ Der Nutzer bestätigt damit die Freigabe für sinnvolles autonomes GitHub-Pages-
 Erlaubt:
 - Statische Browser-Spielprototypen und ihre benötigten öffentlichen Assets im bestehenden Repository WhiseWolf/Breachline auf GitHub Pages bereitstellen, aktualisieren und bei fehlgeschlagenem Test auf die vorherige funktionierende Version zurücksetzen.
 - Vorhandenen GitHub-Account und vorhandene Zugänge verwenden; falls nötig Pages für dieses Repository kostenlos aktivieren und eine eigene Deployment-Quelle bzw. einen Publishing-Branch einrichten.
-- Spiel-Code auf agent-lab und in einer dedizierten Pages-Deployment-Quelle versionieren; main bleibt unverändert.
+- Spiel-Code gemäß der nachfolgenden Freigabe in einem eigenen Spielzweig und nach Prüfung gezielt in main versionieren; nur Spiel-Dateien als Pages-Ausgabe bereitstellen.
 
 Bedingungen:
 - In DECISIONS.md kurz begründen, welche konkrete Unsicherheit oder welcher Test durch die öffentliche URL besser geprüft werden kann. Hosting ist kein Pflichtschritt nach einer bestimmten Kandidatenzahl.
@@ -33,7 +33,12 @@ Bedingungen:
 - Nach Deployment tatsächliche URL, ausgelieferte Version und grundlegendes Gameplay prüfen und protokollieren. Ein erfolgreicher Push oder HTTP 200 allein bestätigt weder spielbares Gameplay noch Spielerwert.
 
 Grenzen:
-Diese Freigabe gilt für das Testhosting und seine erforderliche technische Einrichtung, nicht für Social-Posts außerhalb der folgenden Freigabe, bezahlte Werbung, neue Accounts, kostenpflichtige Dienste, main-Änderungen oder einen öffentlichen Backend-Dienst. Ein fehlender Login oder fehlende Repository-Rechte bleibt ein konkreter Blocker; erlaubte lokale Arbeit fortsetzen.
+Diese Freigabe gilt für das Testhosting und seine erforderliche technische Einrichtung, nicht für Social-Posts außerhalb der folgenden Freigabe, bezahlte Werbung, neue Accounts, kostenpflichtige Dienste, main-Änderungen außerhalb der Spielcode-Freigabe oder einen öffentlichen Backend-Dienst. Ein fehlender Login oder fehlende Repository-Rechte bleibt ein konkreter Blocker; erlaubte lokale Arbeit fortsetzen.
+
+## Spielzweige und main — Freigabe 2026-10-11, 15:28 Europe/Vienna
+Quelle: Nutzeranweisung „Wir sollten im Briefing auch hinterlegen dass die Spiele im Main Zweig erstellt werden sollen bzw. ein eigener Zweig pro Spiel wenn das möglich ist“.
+Erlaubt: Im bestehenden Repository WhiseWolf/Breachline je Spiel einen eigenen Zweig game/<spiel-slug> von der aktuellen main-Basis erstellen. Geprüften Spielcode, benötigte zulässige Assets und passende Spieltests gezielt nach main übernehmen und im bereits freigegebenen Umfang veröffentlichen. Keine erneute Freigabe für diese Schritte verlangen.
+agent-lab bleibt der Zweig für Agentensteuerung, Scheduler und Briefings. Nicht den gesamten agent-lab nach main mergen. Bestehende Spiele und URLs erhalten; für neue Spiele games/<spiel-slug>/ mit eigener index.html verwenden. Hauptindex nur gezielt um Spielelinks ergänzen, keine fremden Inhalte ersetzen. Keine aktiven Logs, Briefings, privaten Run-Artefakte oder Geheimnisse nach main oder in Pages kopieren. Zweig-/Dateiauswahl, Teststand, Übernahme-Commit und tatsächliche Test-URL dokumentieren. Keine Force-Pushes, History-Resets oder Löschung bestehender Spiele. Die frühere Einschränkung „main bleibt unverändert“ wird für diesen konkreten Spielcode-Umfang ersetzt. Alle Kosten-, Evidenz- und Social-Grenzen gelten weiter.
 
 ## Organische Bekanntmachung für Spielertests — Freigabe 2026-10-11
 Quelle: Anschlussanweisung derselben Projektsitzung, 2026-10-11, 11:54 Europe/Vienna: „Irgendwann muss er ja selbstständig weiter arbeiten und veröffentlichen für Spieler Tests? Aber wer soll spielen ohne Marketing bzw Bekanntmachung auf socials?“
@@ -66,3 +71,4 @@ Aktuelle Nutzerklarstellung: „Das Profil ‚breachlineagent‘ auf Instagram i
 - YouTube und TikTok: weiterhin keine Projektaccounts bestätigt.
 Die organische Spieltest-Freigabe gilt für @breachlineagent im oben dokumentierten Umfang, sobald der tatsächliche Zugriff geprüft ist; keine erneute Freigabe für passende Spieltest-Beiträge verlangen. Keine Anmeldung oder erfolgreiche Veröffentlichung allein aus dieser Statusmeldung ableiten.
 Jarvis kann Profiltexte, eigene Gameplay-Assets und Testaufrufe vorbereiten. Bei Instagram nur konkret fehlenden Zugriff oder notwendige Authentifizierung als Blocker melden, nicht erneut Kontoerstellung verlangen. Für YouTube/TikTok ist Einrichtung durch den Nutzer oder eine gesonderte ausdrückliche Kontoerstellungsfreigabe erforderlich, falls der jeweilige Kanal sinnvoll benötigt wird. Keine Pflicht, alle Plattformen einzurichten. Authentifizierung nicht umgehen. Spielentwicklung, lokale Tests und freigegebenes Pages-Testhosting bleiben unabhängig fortsetzbar.
+

@@ -104,13 +104,28 @@
     "previous mission memory"
   ],
   "authorized_external_actions": {
+    "game_branches_and_main": {
+      "authorization": "13_AUTHORIZATIONS.md: Spielzweige und main — Freigabe 2026-10-11, 15:28 Europe/Vienna",
+      "repository": "WhiseWolf/Breachline",
+      "development_branch_pattern": "game/<spiel-slug>",
+      "base_branch": "main",
+      "integration_branch": "main",
+      "game_directory_pattern": "games/<spiel-slug>/",
+      "requires_targeted_game_file_integration": true,
+      "whole_agent_lab_merge_allowed": false,
+      "requires_tests": true,
+      "preserve_existing_games_and_urls": true,
+      "force_push_allowed": false,
+      "agent_control_branch": "agent-lab"
+    },
     "github_pages_prototype_test_hosting": {
       "authorization": "13_AUTHORIZATIONS.md: GitHub-Pages-Testhosting — Freigabe 2026-10-11",
       "repository": "WhiseWolf/Breachline",
       "requires_local_test": true,
       "requires_purpose_and_evidence": true,
       "additional_cost_limit_eur": 0,
-      "main_changes_allowed": false,
+      "main_changes_allowed": true,
+      "main_changes_scope": "Tested game code, assets and game tests only; see game_branches_and_main authorization. Never merge all of agent-lab.",
       "logs_and_secrets_upload_allowed": false,
       "enforcement": "descriptive; verify actual runtime permissions and deployment state"
     },
@@ -146,3 +161,4 @@
     }
   }
 }
+

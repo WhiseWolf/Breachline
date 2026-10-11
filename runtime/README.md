@@ -55,8 +55,8 @@ Es wird hier kein Boot-Autostart eingerichtet.
 - Runtime-Prompts aus alten Missionen werden nicht als neuer Auftrag verwendet;
   der aktive Auftrag steckt im vollständigen neuen Kontextpaket.
 - Pause 60 Sekunden nach Rückkehr, keine feste Forschungsphase oder Ideenzahl.
-- Drei Rückkehrzyklen ohne erfolgreiche Erkenntnis-/Ausführungstools und geändertes
-  CURRENT_WORK pausieren die Schleife. Nur think, calculator, file_write,
+- Rückkehrzyklen ohne erfolgreiche Erkenntnis-/Ausführungstools und geändertes
+  CURRENT_WORK laufen mit einem bis 300 Sekunden begrenzten Backoff weiter. Nur think, calculator, file_write,
   apply_patch und git_commit zählen für sich nicht als Erkenntnisfortschritt.
 - `SCHEDULER_WAIT` als letzte Antwortzeile pausiert, wenn keine sinnvolle erlaubte
   unabhängige Arbeit verbleibt. NEEDS_USER ist ansonsten kein globaler Stoppschalter.
@@ -169,7 +169,25 @@ Offizielle Grundlagen:
 python3 -m unittest discover -s tests -p 'test_jarvis_loop.py'
 ```
 
-## Übergabe bei ausgeschöpftem Kontext
+## Regelmäßige Sicherung und rollender Kontext
+
+Vor dem fünften Modellaufruf und danach alle vier Aufrufe speichert der Scheduler
+die tatsächliche Nachrichtenhistorie und Aktionsbelege als checkpoint-NNNN.json.
+Zusätzlich sichert er bei Zyklusrückkehr. CURRENT_WORK erhält einen atomar ersetzten,
+begrenzten Scheduler-Abschnitt; der fachliche Arbeitsstand darüber bleibt erhalten.
+Das benötigt keinen file_write-Aufruf des Modells. Assistant-Aussagen im Checkpoint
+sind ausdrücklich ungeprüft, nicht als bestätigter Fortschritt ausgewiesen.
+
+Vor jeder Anfrage wird Platz für die Antwort und eine adaptive Kontextreserve
+eingeplant. Bei knapper Reserve werden vollständig abgeschlossene Assistant-/Tool-
+Dialoge zuerst archiviert und dann im laufenden Nachrichtenverlauf durch einen
+kurzen Artefaktverweis mit den jüngsten Assistant-Aussagen ersetzt. Alle initialen
+Nachrichten und spätere System-/Nutzeranweisungen bleiben erhalten. Tool-IDs müssen
+vollständig gepaart und Schreibwirkungen geklärt sein; keine Werkzeugwiederholung.
+RECOVERY CHECKPOINT_SAVED und RECOVERY CONTEXT_ROLL zeigen die tatsächlichen Schritte.
+Die Tokenplanung bleibt eine konservative Schätzung, keine exakte Tokenisierung.
+
+## Verbleibende Kontextgrenzen
 
 Wenn auch die begrenzte Vergrößerung und Archivierung langer Werkzeugausgaben
 nicht ausreichen, wird die blockierte Anfrage in `context_overflow.json` gesichert.
@@ -183,8 +201,11 @@ Briefing und Freigaben prüfen. GitHub-Pages-Testhosting ist im dokumentierten U
 der Nutzerfreigabe vom 2026-10-11 erlaubt; der Scheduler erteilt keine zusätzlichen
 Rechte und richtet Pages nicht selbst ein.
 
-Nach drei aufeinanderfolgenden Kontextübergaben pausiert der Prozess. Ohne geänderten
-Checkpoint oder bei ungeklärten Schreibaktionen stoppt er sofort. Passt bereits der
+Kontextübergaben haben keine feste Drei-Zyklen-Pause mehr. Der rollende Kontext
+verhindert den bisherigen Abbruch durch anwachsende abgeschlossene Tool-Historie.
+Bei nicht kürzbaren übergroßen Anweisungen oder ungeklärten Schreibaktionen kann
+weiterhin eine konkrete Prüfung nötig sein. Passt bereits der
 vollständige Startkontext nicht in die Obergrenze, ist eine geprüfte Verdichtung der
 aktiven Logs nötig; Regeln werden nicht abgeschnitten. `--once` führt auch bei einer
 Kontextübergabe keinen weiteren Zyklus aus. Kein Reset bestehender Logs.
+
