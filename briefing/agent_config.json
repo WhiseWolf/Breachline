@@ -126,7 +126,23 @@
       "new_accounts_allowed": false,
       "direct_messages_allowed": false,
       "per_post_renewed_approval_required": false,
-      "account_state": "No project accounts exist on Instagram, YouTube or TikTok, per user 2026-10-11. Posting authorization is conditional on later verified accounts; account creation is not authorized."
+      "account_state": "Instagram @breachlineagent exists and is blank per user 2026-10-11 12:00 Europe/Vienna; runtime authentication and write access unverified. YouTube and TikTok accounts remain unconfirmed. Account creation is not authorized."
+    }
+  },
+  "social_accounts": {
+    "instagram": {
+      "handle": "breachlineagent",
+      "url": "https://www.instagram.com/breachlineagent/",
+      "project_assignment": "user_confirmed",
+      "existence": "user_reported",
+      "profile_state": "blank_user_reported",
+      "runtime_access": "UNVERIFIED"
+    },
+    "youtube": {
+      "existence": "not_confirmed"
+    },
+    "tiktok": {
+      "existence": "not_confirmed"
     }
   }
 }
