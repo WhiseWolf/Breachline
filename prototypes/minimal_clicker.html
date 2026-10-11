@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Clicker Test</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; }
+        #click-btn { font-size: 24px; padding: 20px 40px; cursor: pointer; margin: 20px; }
+        #score { font-size: 32px; color: #333; }
+        .share-btn { display: inline-block; margin: 10px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🎮 Minimal Clicker Test</h1>
+    <div id="score">Score: 0</div>
+    <button id="click-btn" onclick="increment()">Klicken!</button>
+    <p>Klicke so oft wie möglich in 30 Sekunden!</p>
+    
+    <div style="margin-top: 20px;">
+        <a href="#" class="share-btn" onclick="alert('Share-Link würde hier generiert werden')">📤 Teilen</a>
+        <a href="#" class="share-btn" onclick="window.location.reload()">🔄 Neustart</a>
+    </div>
+
+    <script>
+        let score = 0;
+        document.getElementById('score').textContent = 'Score: ' + score;
+        
+        function increment() {
+            score++;
+            document.getElementById('score').textContent = 'Score: ' + score;
+            
+            // Einfache Persistenz via localStorage
+            if (localStorage.getItem('clicker_score') !== null) {
+                let saved = parseInt(localStorage.getItem('clicker_score'));
+                if (saved > score) score = saved;
+            }
+            localStorage.setItem('clicker_score', score);
+        }
+    </script>
+</body>
+</html>
