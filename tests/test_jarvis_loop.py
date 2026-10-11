@@ -190,6 +190,11 @@ class ToolSelectionTests(unittest.TestCase):
         names, _, _ = loop.select_tools("", "", self.registry())
         self.assertEqual(names, ["file_read", "file_write", "shell_exec"])
 
+    def test_host_file_work_never_advertises_disposable_docker_tools(self):
+        names, _, _ = loop.select_tools("code_interpreter_docker,file_write",
+                                       "docker_shell_exec,file_read", self.registry())
+        self.assertEqual(names, ["file_write", "file_read", "shell_exec"])
+
     def test_unknown_implementation_fails_explicitly(self):
         with self.assertRaisesRegex(ValueError, "not registered"):
             loop.select_tools("imaginary_tool", "", self.registry())
@@ -360,6 +365,132 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(ledger.actions[-1]["status"], "NOT_EXECUTED")
         self.assertFalse(loop.failed_before_execution("shell_exec", "FileNotFoundError(2, 'No such file or directory')"))
 
+    def path_error(self):
+        return ('Traceback (most recent call last):\n'
+                '  File "<string>", line 138, in <module>\n'
+                "FileNotFoundError: [Errno 2] No such file or directory: '/home/pagi/breachline-agent/repo/quickpuzzle/index.html'\n")
+
+    def test_completed_audited_isolated_failure_allows_corrected_next_inference(self):
+        ledger = loop.ActionLedger(self.root)
+        ledger.docker_proof = {"source_ast_sha256": loop.DOCKER_SOURCE_AST_SHA256}
+        ledger.record("tool_call_start", {"tool": "code_interpreter_docker"})
+        ledger.record("tool_call_end", {"tool": "code_interpreter_docker",
+                                      "success": False, "result": self.path_error()})
+        engine = SimpleNamespace(generate=Mock(return_value={"content": "inspect host, then use file_write"}))
+        recorder = loop.RecordingEngine(engine, self.root, 32768, 2048, ledger=ledger)
+        messages = self.messages + [SimpleNamespace(role="tool", content=self.path_error())]
+        recorder.generate(messages)
+        engine.generate.assert_called_once()
+        self.assertEqual(len(ledger.actions), 1)
+        self.assertEqual(ledger.actions[0]["status"], "FAILED_ISOLATED")
+        self.assertIs(engine.generate.call_args.args[0], messages)
+
+    def test_path_error_alone_never_proves_host_isolation(self):
+        for name, result, proof in (
+                ("code_interpreter_docker", self.path_error(), None),
+                ("shell_exec", self.path_error(), {"verified": True}),
+                ("code_interpreter_docker", "Execution timed out after 30 seconds.", {"verified": True}),
+                ("code_interpreter_docker", self.path_error() + "... (output truncated)", {"verified": True})):
+            self.assertFalse(loop.isolated_path_failure(name, result, proof))
+
+    def isolated_old_run(self, result=None):
+        run = self.root / "runs/20261011-failed"
+        run.mkdir(parents=True)
+        ledger = loop.ActionLedger(run)
+        ledger.record("tool_call_start", {"tool": "code_interpreter_docker"})
+        ledger.record("tool_call_end", {"tool": "code_interpreter_docker", "success": False})
+        loop.save_json(run / "manifest.json", {"status": "FAILED", "mission_id": "fresh"})
+        (run / "error.txt").write_text(result or self.path_error())
+        events = [{"event": "tool_call_start", "tool_name": "code_interpreter_docker"},
+                  {"event": "tool_call_end", "tool_name": "code_interpreter_docker",
+                   "success": False, "result_path": str(run / "error.txt")}]
+        (run / "events.jsonl").write_text("\n".join(json.dumps(e) for e in events))
+        return run, ledger
+
+    def test_old_screenshot_failure_resumes_preserving_all_original_evidence(self):
+        run, ledger = self.isolated_old_run()
+        originals = {p.name: p.read_bytes() for p in run.iterdir()}
+        with patch.object(loop, "isolated_docker_proof", return_value={"verified": True}):
+            loop.check_previous_run(self.root)
+            loop.check_previous_run(self.root)
+        for name, raw in originals.items():
+            self.assertEqual((run / name).read_bytes(), raw)
+        review = json.loads((run / "isolated_action_review.json").read_text())
+        self.assertEqual(review["actions"][0]["status"], "FAILED_ISOLATED")
+        self.assertEqual(ledger.actions[0]["status"], "FAILED")
+        notice = loop.previous_run_notice(self.root, "fresh")
+        self.assertIn("FAILED", notice)
+
+    def test_unknown_implementation_missing_result_and_unpaired_events_stay_blocked(self):
+        run, _ = self.isolated_old_run()
+        with patch.object(loop, "isolated_docker_proof", return_value=None):
+            with self.assertRaises(loop.UnsafeRecoveryError):
+                loop.check_previous_run(self.root)
+        with patch.object(loop, "isolated_docker_proof", return_value={"verified": True}):
+            (run / "error.txt").unlink()
+            with self.assertRaises(loop.UnsafeRecoveryError):
+                loop.check_previous_run(self.root)
+            (run / "error.txt").write_text(self.path_error())
+            (run / "events.jsonl").write_text(json.dumps({"event": "tool_call_end",
+                "tool_name": "code_interpreter_docker", "success": False,
+                "result_path": str(run / "error.txt")}))
+            with self.assertRaises(loop.UnsafeRecoveryError):
+                loop.check_previous_run(self.root)
+
+    def test_result_outside_run_and_other_failed_write_do_not_get_reconciled(self):
+        run, ledger = self.isolated_old_run()
+        outside = self.root / "outside.txt"
+        outside.write_text(self.path_error())
+        events = [json.loads(l) for l in (run / "events.jsonl").read_text().splitlines()]
+        events[-1]["result_path"] = str(outside)
+        (run / "events.jsonl").write_text("\n".join(json.dumps(e) for e in events))
+        with patch.object(loop, "isolated_docker_proof", return_value={"verified": True}):
+            with self.assertRaises(loop.UnsafeRecoveryError):
+                loop.check_previous_run(self.root)
+        events[-1]["result_path"] = str(run / "error.txt")
+        events += [{"event": "tool_call_start", "tool_name": "shell_exec"},
+                   {"event": "tool_call_end", "tool_name": "shell_exec", "success": False}]
+        (run / "events.jsonl").write_text("\n".join(json.dumps(e) for e in events))
+        ledger.record("tool_call_start", {"tool": "shell_exec"})
+        ledger.record("tool_call_end", {"tool": "shell_exec", "success": False})
+        with patch.object(loop, "isolated_docker_proof", return_value={"verified": True}):
+            with self.assertRaises(loop.UnsafeRecoveryError):
+                loop.check_previous_run(self.root)
+
+    def test_interrupted_docker_action_never_becomes_completed_isolated_failure(self):
+        ledger = loop.ActionLedger(self.root)
+        ledger.docker_proof = {"verified": True}
+        ledger.record("tool_call_start", {"tool": "code_interpreter_docker"})
+        with self.assertRaises(loop.UnsafeRecoveryError):
+            ledger.check()
+
+    def test_runtime_proof_requires_both_exact_tool_and_default_factory(self):
+        import ast
+        cls = type("DockerCodeInterpreterTool", (), {})
+        source = "class DockerCodeInterpreterTool:\n    pass\n"
+        factory = "def _build_tools():\n    return tool_cls()\n"
+        source_path = self.root / "tool.py"
+        source_path.write_text(source)
+        source_hash = loop.digest(ast.dump(ast.parse(source), include_attributes=False).encode())
+        factory_hash = loop.digest(ast.dump(ast.parse(factory).body[0], include_attributes=False).encode())
+        modules = {"openjarvis": SimpleNamespace(tools=SimpleNamespace()),
+                   "openjarvis.tools": SimpleNamespace(),
+                   "openjarvis.core.registry": SimpleNamespace(ToolRegistry=SimpleNamespace(get=lambda name: cls)),
+                   "openjarvis.tools.code_interpreter_docker": SimpleNamespace(DockerCodeInterpreterTool=cls),
+                   "openjarvis.cli.ask": SimpleNamespace(_build_tools=Mock())}
+        with patch.dict(sys.modules, modules), \
+             patch.object(loop.inspect, "getfile", return_value=str(source_path)), \
+             patch.object(loop.inspect, "getsource", return_value=factory), \
+             patch.object(loop, "DOCKER_SOURCE_AST_SHA256", source_hash), \
+             patch.object(loop, "TOOL_FACTORY_AST_SHA256", factory_hash):
+            self.assertEqual(loop.isolated_docker_proof()["source_ast_sha256"], source_hash)
+            with patch.object(loop, "TOOL_FACTORY_AST_SHA256", "changed"):
+                self.assertIsNone(loop.isolated_docker_proof())
+            with patch.object(loop, "DOCKER_SOURCE_AST_SHA256", "changed"):
+                self.assertIsNone(loop.isolated_docker_proof())
+            modules["openjarvis.core.registry"].ToolRegistry.get = lambda name: type("CustomDocker", (), {})
+            self.assertIsNone(loop.isolated_docker_proof())
+
 
 class CycleIntegrationTests(unittest.TestCase):
     setUp = ContextTests.setUp
@@ -373,7 +504,8 @@ class CycleIntegrationTests(unittest.TestCase):
              patch.object(loop.os, "chdir"), patch.object(loop.signal, "signal"):
             loop.main()
         self.assertEqual(cycle.call_count, 5)
-        self.assertEqual(sleep.call_count, 4)
+        # StopRequest uses interruptible one-second waits (60 per cycle).
+        self.assertEqual(sleep.call_count, 240)
 
     def test_two_cycles_reload_handoff_and_retry_model_without_replaying_actions(self):
         self.exercise_cycles()
@@ -387,7 +519,10 @@ class CycleIntegrationTests(unittest.TestCase):
     def test_context_overflow_with_uncertain_write_stops(self):
         self.exercise_cycles(overflow=True, uncertain=True)
 
-    def exercise_cycles(self, overflow=False, checkpoint=True, uncertain=False):
+    def test_returned_failure_without_event_is_not_hidden_by_earlier_success(self):
+        self.exercise_cycles(unreported_failure=True)
+
+    def exercise_cycles(self, overflow=False, checkpoint=True, uncertain=False, unreported_failure=False):
         config = self.root / "config.toml"
         config.write_text("existing configuration")
         cfg = SimpleNamespace(agent=SimpleNamespace(max_turns=60),
@@ -427,9 +562,12 @@ class CycleIntegrationTests(unittest.TestCase):
                 # Protected user context cannot be compacted to fit the ceiling.
                 messages.append(SimpleNamespace(role="user", content="x" * 110000))
             kwargs["engine"].generate(messages)
-            return SimpleNamespace(content="done", turns=2, metadata={}, tool_results=[
+            results = [
                 SimpleNamespace(tool_name="web_search", success=True, content="mock source"),
-                SimpleNamespace(tool_name="file_write", success=True, content="saved")])
+                SimpleNamespace(tool_name="file_write", success=True, content="saved")]
+            if unreported_failure:
+                results.append(SimpleNamespace(tool_name="file_write", success=False, content="Write error: disk full"))
+            return SimpleNamespace(content="done", turns=2, metadata={}, tool_results=results)
 
         modules = {
             "openjarvis.core.events": SimpleNamespace(EventBus=Bus, EventType=SimpleNamespace(
@@ -442,11 +580,25 @@ class CycleIntegrationTests(unittest.TestCase):
         policy = loop.RecoveryPolicy(32768, sleep=Mock())
         with patch.dict(sys.modules, modules), patch.object(loop, "prepare_runtime", return_value=(
                 cfg, "operative", "local", ["file_read", "file_write", "web_search"], [])):
+            if unreported_failure:
+                with self.assertRaises(loop.UnsafeRecoveryError):
+                    loop.run_cycle(self.root, config, self.prompt, policy.num_ctx, policy)
+                run = next((self.root / "logs/runs").iterdir())
+                self.assertEqual([a["status"] for a in json.loads((run / "action_receipts.json").read_text())],
+                                 ["SUCCEEDED", "SUCCEEDED", "FAILED"])
+                self.assertEqual(len(json.loads((run / "tool_results.json").read_text())), 3)
+                self.assertEqual((run / "answer.md").read_text(), "done")
+                self.assertTrue((run / "failure_snapshot.json").exists())
+                return
             if overflow and (not checkpoint or uncertain):
                 with self.assertRaises(loop.UnsafeRecoveryError if uncertain else loop.ContextBudgetError):
                     loop.run_cycle(self.root, config, self.prompt, policy.num_ctx, policy)
                 manifest = json.loads(next((self.root / "logs/runs").glob("*/manifest.json")).read_text())
                 self.assertEqual(manifest["status"], "FAILED")
+                self.assertIn("failure_snapshot", manifest)
+                snapshot = json.loads(Path(manifest["failure_snapshot"]).read_text())
+                self.assertIn("messages", snapshot)
+                self.assertIn("actions", snapshot)
                 return
             first = loop.run_cycle(self.root, config, self.prompt, policy.num_ctx, policy)
             second = loop.run_cycle(self.root, config, self.prompt, policy.num_ctx, policy)

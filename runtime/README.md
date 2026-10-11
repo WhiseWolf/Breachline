@@ -5,7 +5,10 @@ Modell, Agent, Temperatur, max_tokens, max_turns und konfigurierte lokale Werkze
 werden daraus gelesen. Toollisten aus [agent] und [tools] werden zusammengeführt.
 Die registrierten Basiswerkzeuge file_read, file_write und shell_exec werden explizit
 ergänzt, wenn sie in der TOML-Liste fehlen. Keine neue config.toml wird erzeugt und
-keine Laufgrenze erhöht.
+keine Laufgrenze erhöht. Die Container-Werkzeuge code_interpreter_docker
+und docker_shell_exec werden für diese Host-Entwicklungsmission ausdrücklich
+ausgeschlossen. Die TOML bleibt unverändert; der Ausschluss steht im Terminal
+und unter excluded_host_incompatible_tools im Manifest.
 `briefing/agent_config.json` bestimmt ausschließlich die aktiven Arbeitsdateien.
 
 ## Installation und Start auf dem vorhandenen Ubuntu
@@ -157,11 +160,48 @@ Container-Ausführungsfehler und unbekannte Fehlermeldungen sind keine solche Au
 Das ist eine Prüfung des Ausführungsstatus, keine Bestätigung korrekter Inhalte und
 keine automatische Wiederholung erfolgreicher Shell-Aktionen.
 
+### Behebung des QuickPuzzle-Abbruchs (2026-10-11)
+
+Der offizielle code_interpreter_docker startet `python -c` in einem Container mit
+read_only=True, temporärem /tmp, standardmäßig ohne Netzwerk und **ohne Host-Mounts**.
+`/home/pagi/breachline-agent/repo/quickpuzzle/index.html` kann dort nicht auf dem Host
+geschrieben werden. docker_shell_exec benötigt dagegen einen aktiven TerminalBench-
+Taskcontainer und ist ausdrücklich kein Host-Shell-Ersatz. Ein manuell auf Ubuntu angelegter Ordner behebt diesen Fehler
+nicht. Neue Spieldateien über file_write mit create_dirs=true im autorisierten
+Spiel-Worktree schreiben, mit file_read zurücklesen und mittels shell_exec mit
+explizitem working_dir prüfen. Das Briefing für main/game-Zweige bleibt maßgeblich.
+
+Beim Start prüft der Scheduler den vorhandenen letzten Run erneut. Nur ein gepaarter,
+abgeschlossener Docker-Fehler mit vollständig gespeicherten FileNotFoundError-
+Traceback darf als FAILED_ISOLATED geprüft werden. Dafür müssen die installierte
+Docker-Implementierung **und** die Standard-Tool-Fabrik exakt den geprüften
+AST-Fingerprints des offiziellen Codes entsprechen. Eine angepasste/unbekannte
+Version, Timeout, fehlende Rückgabe, fremder Artefaktpfad oder weitere unklare
+Host-/Shell-/Social-Aktion bleibt gesperrt. Es wird kein Container ausgeführt.
+
+Die Prüfung schreibt isolated_action_review.json mit Quelldigest, Ergebnisdigest,
+Original-Receipt-Digest und geprüften Aktionen. Originale Manifeste, Ergebnisse
+und action_receipts.json bleiben unverändert. Der nächste Zyklus erhält den
+Fehler-/Prüfverweis und wählt einen korrigierten Host-Schritt; das alte Skript wird
+nicht wiederholt. FAILED_ISOLATED ist kein erfolgreicher Spielbau.
+
+Nach dem Update mit den obigen pull-/Startbefehlen sollte beim gezeigten Fehler
+RECOVERY ISOLATED_FAILURE_REVIEW erscheinen. Falls die installierte Implementierung
+abweicht, bleibt eine konkrete Prüfung erforderlich; keine Protokolle löschen.
+Bei einem erneuten Fehler speichert failure_snapshot.json die tatsächliche
+Nachrichtenhistorie und Aktionsbelege, auch wenn ein normaler Checkpoint gesperrt
+ist. Zurückgegebene Antwort/Tool-Ergebnisse werden vor der Abschlussprüfung gesichert.
+Fehler ohne Bus-Ereignis werden pro Aufruf abgeglichen, nicht nur pro Werkzeugname.
+
+Audit, Ursachen, Testumfang und Grenzen: [AUDIT_2026-10-11.md](AUDIT_2026-10-11.md).
+
 Offizielle Grundlagen:
 - https://github.com/open-jarvis/OpenJarvis/blob/main/src/openjarvis/cli/ask.py
 - https://github.com/open-jarvis/OpenJarvis/blob/main/src/openjarvis/core/config.py
 - https://github.com/open-jarvis/OpenJarvis/blob/main/src/openjarvis/engine/ollama.py
 - https://github.com/open-jarvis/OpenJarvis/blob/main/src/openjarvis/tools/code_interpreter_docker.py
+- https://github.com/open-jarvis/OpenJarvis/blob/main/src/openjarvis/tools/file_write.py
+- https://github.com/open-jarvis/OpenJarvis/blob/main/src/openjarvis/tools/shell_exec.py
 
 ## Tests
 

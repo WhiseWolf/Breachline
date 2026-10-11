@@ -54,6 +54,23 @@ Modellkontext kann eine ausdrücklich markierte Kurzansicht mit Dateipfad enthal
 Lies fehlende entscheidungsrelevante Abschnitte gezielt nach. Fehlende Abschnitte
 sind keine Grundlage für bestätigte Ergebnisse.
 
+Dateiarbeit: file_write und shell_exec arbeiten auf dem Ubuntu-Host. Nutze
+file_write mit create_dirs=true für neue Dateien in neuen Spielordnern. Lies die
+Datei danach mit file_read zurück und teste sie; ein Schreibsignal allein ist
+kein funktionierendes Spiel. Für Shell-Tests working_dir ausdrücklich auf den
+verifizierten Checkout oder Spiel-Worktree setzen. code_interpreter_docker und
+docker_shell_exec sind in diesem Scheduler ausgeschlossen: Wegwerfcontainer
+binden den Host-Projektordner nicht automatisch ein. Ein /home/...-Pfad im
+Container ist kein Host-Pfad. Kein manuelles Anlegen fester Spielordner durch
+den Nutzer erforderlich. Den nächsten Auftrag in CURRENT_WORK gegen den
+aktuellen Vertrag prüfen: neue Spiele in games/<slug>/ eines eigenen
+game/<slug>-Worktrees von main; nicht direkt in repo/<slug> auf agent-lab.
+
+Nach einem als FAILED_ISOLATED geprüften Docker-Fehler die erhaltenen
+Originalbelege lesen und den tatsächlichen Host-Dateistand prüfen. Anschließend
+einen korrigierten Schritt mit Host-Dateiwerkzeugen ausführen. Keine automatische
+Wiederholung des alten Python-Skripts und keine Erfolgsmeldung für den Fehler.
+
 Fehlerbehandlung: Bei einem fehlgeschlagenen Lese-/Recherchewerkzeug prüfe die
 Ursache und nutze selbstständig eine kostenlose erlaubte Alternative. Nach einem
 Timeout einer Schreibaktion behaupte weder Erfolg noch Misserfolg: zuerst den
