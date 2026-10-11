@@ -40,3 +40,15 @@ Lange Werkzeugausgaben werden vollständig als Run-Artefakte gespeichert; der
 Modellkontext kann eine ausdrücklich markierte Kurzansicht mit Dateipfad enthalten.
 Lies fehlende entscheidungsrelevante Abschnitte gezielt nach. Fehlende Abschnitte
 sind keine Grundlage für bestätigte Ergebnisse.
+
+Fehlerbehandlung: Bei einem fehlgeschlagenen Lese-/Recherchewerkzeug prüfe die
+Ursache und nutze selbstständig eine kostenlose erlaubte Alternative. Nach einem
+Timeout einer Schreibaktion behaupte weder Erfolg noch Misserfolg: zuerst den
+tatsächlichen Zustand prüfen, niemals blind wiederholen. Der Scheduler wiederholt
+nur vorübergehend gescheiterte Modellanfragen mit unveränderter Arbeitshistorie.
+Er setzt keine Werkzeugaktionen erneut ab. Unklare Schreibwirkungen stoppen zur
+Prüfung. Constitution, Budget, Sicherheitsrichtlinien, Rechte und Freigaben dürfen
+zur Fehlerbehebung nicht gelockert werden. Codeverbesserungen nur gemäß Briefing
+mit überprüfbarem Test und Rückweg; keine unkontrollierte Reparaturschleife.
+Ausführliche Evidenz als Artefakte speichern, aktive Logs knapp halten; keine
+historischen Ergebnisse löschen oder ohne Beleg durch Zusammenfassungen ersetzen.

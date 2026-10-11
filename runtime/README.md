@@ -55,9 +55,9 @@ Es wird hier kein Boot-Autostart eingerichtet.
 - Runtime-Prompts aus alten Missionen werden nicht als neuer Auftrag verwendet;
   der aktive Auftrag steckt im vollständigen neuen Kontextpaket.
 - Pause 60 Sekunden nach Rückkehr, keine feste Forschungsphase oder Ideenzahl.
-- Drei Rückkehrzyklen ohne erfolgreiche Tools und geändertes CURRENT_WORK pausieren
-  die Schleife; technische Fehler stoppen mit tatsächlicher Fehlermeldung statt
-  einen gescheiterten Auftrag endlos neu auszuführen.
+- Drei Rückkehrzyklen ohne erfolgreiche Erkenntnis-/Ausführungstools und geändertes
+  CURRENT_WORK pausieren die Schleife. Nur think, calculator, file_write,
+  apply_patch und git_commit zählen für sich nicht als Erkenntnisfortschritt.
 - `SCHEDULER_WAIT` als letzte Antwortzeile pausiert, wenn keine sinnvolle erlaubte
   unabhängige Arbeit verbleibt. NEEDS_USER ist ansonsten kein globaler Stoppschalter.
 
@@ -84,7 +84,13 @@ Artefakte gespeichert. Der Modellkontext erhält eine markierte Kopf-/Endansicht
 mit Dateipfad. Bei Kontextdruck wird diese Ansicht weiter verkleinert; Tool-Call-IDs
 und die Reihenfolge bleiben erhalten. Die ursprüngliche Agenthistorie bleibt intakt.
 User-/System-Nachrichten mit Pflichtbriefing und aktivem Auftrag werden nicht gekürzt.
-Passt selbst dieser Kontext mit Tool-Call-Protokoll nicht, stoppt der Lauf mit Hinweis.
+Passt selbst dieser Kontext mit Tool-Call-Protokoll nicht, wächst das angeforderte
+Fenster in 8192er-Schritten bis maximal 49152 (`--max-num-ctx`). Die Anpassung bleibt
+für weitere Zyklen dieses Prozesses erhalten; max_tokens/max_turns bleiben unverändert.
+Mit `--max-num-ctx 32768` lässt sich Wachstum deaktivieren. Es gibt keine unbegrenzte
+Erhöhung, Modellwechsel oder automatische RAM-/GPU-Konfiguration. Ein größeres
+Fenster kann auf dieser Hardware deutlich mehr Speicher und Zeit benötigen.
+Passt der geschützte Kontext auch an der Obergrenze nicht, stoppt der Loop.
 Aktive Logs knapp halten, ausführliche Evidenz in Artefakten mit Verweisen speichern.
 Ollama/Modell muss dieses Kontextfenster unterstützen; der lokale Erstlauf ist noch
 nicht abgenommen. Die Größenprüfung beweist nicht, dass der Modellserver intern
@@ -105,8 +111,38 @@ Tool-Ergebnisse können sensible Daten enthalten: nicht automatisch öffentlich 
 `CYCLE_RETURNED` bedeutet erfolgreiche Tool-Rückgaben plus verändertes CURRENT_WORK;
 das beweist keine Marktvalidierung oder menschliche Retention. Inhaltliche Abnahme
 erfordert tatsächlich gespeicherte Quellen/Tests, Gegenprüfung und passenden Handoff.
-Die Tests prüfen Loader, Fortsetzung, Ausschlüsse und Engine-Weitergabe mit einem
-Testdouble; sie führen keinen lokalen Jarvis/Ollama-Lauf aus.
+Die Tests prüfen Loader, Fortsetzung, Ausschlüsse, Wiederholungen, Aktionsbelege und
+Engine-Weitergabe sowie zwei vollständige Scheduler-Zyklen mit Testdoubles. Sie
+führen keinen echten lokalen Jarvis/Ollama-Lauf aus.
+
+## Begrenzte automatische Fehlerbehandlung
+
+Nur Modell-Inferenz wird wiederholt, niemals der ganze Agentenlauf oder ein
+Werkzeug. Verbindungs-/Timeoutfehler und vorübergehende HTTP-Statuscodes
+408/429/502/503/504: höchstens zwei Wiederholungen pro Anfrage nach 10 und 30 Sekunden,
+höchstens sechs Wiederholungen pro Arbeitszyklus. `--inference-retries 0` deaktiviert
+sie. Die Arbeitshistorie einschließlich bereits ausgeführter Werkzeuge bleibt erhalten.
+Bekannte Konfigurations-, Sicherheits-, Rechte-, Speicher- und andere unbekannte
+Fehler werden nicht durch Wiederholung kaschiert. Keine Cloud-Fallbacks, keine
+Dienst-/Systemneustarts, kein chmod/chown und keine Änderung der Constitution.
+
+`action_receipts.json` dokumentiert Werkzeugstart/-ende und Rückgabestatus. Ein
+fehlgeschlagenes oder nicht abgeschlossenes potenziell schreibendes Werkzeug
+blockiert weitere Modellaufrufe und den nächsten manuellen Neustart zur Prüfung.
+Unbekannte Tools und Shell-/Docker-/Codewerkzeuge gelten vorsorglich als potenziell
+schreibend. Bekannte Lesewerkzeuge sowie HTTP mit explizitem GET/HEAD/OPTIONS dürfen
+scheitern, ohne unabhängige Recherche zu blockieren. Jarvis kann erlaubte Alternativen
+selbst wählen; diese Werkzeuge werden nicht vom Scheduler automatisch wiederholt.
+Ein Erfolgssignal ist keine Garantie für korrekte Inhalte. Aktionsbelege dürfen nicht
+gelöscht werden, um den Schutz zu umgehen; unklare Auswirkungen zuerst prüfen.
+
+Der nächste Zyklus bekommt zusätzlich einen Verweis auf die Laufartefakte der
+gleichen Mission. Er muss tatsächliche Ergebnisse vor Wiederholung überprüfen,
+besonders wenn CURRENT_WORK nach einem Abbruch noch NOT_STARTED zeigt. Es werden
+keine alten Missionsarchive als neuer Auftrag eingebracht.
+`recovery.jsonl` zeigt Kontextanpassungen und Wiederholungen. Keine automatischen
+Uploads dieser Artefakte. Fehlerbehandlung ist begrenzt und ersetzt weder die
+Briefing-Regeln noch eine lokale Runtime-Abnahme.
 
 Offizielle Grundlagen:
 - https://github.com/open-jarvis/OpenJarvis/blob/main/src/openjarvis/cli/ask.py

@@ -1,9 +1,11 @@
 import importlib.util
 import json
+import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 spec = importlib.util.spec_from_file_location("jarvis_loop", Path(__file__).parents[1] / "runtime/jarvis_loop.py")
 loop = importlib.util.module_from_spec(spec)
@@ -146,6 +148,189 @@ class ToolSelectionTests(unittest.TestCase):
         self.assertIn("memory_search", excluded)
         self.assertIn("web_search", names)
         self.assertNotIn("web_fetch", names)
+
+
+class RecoveryTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.messages = [SimpleNamespace(role="user", content="Protected rules and active handoff")]
+
+    def test_transient_inference_retry_preserves_history_and_does_not_repeat_write(self):
+        ledger = loop.ActionLedger(self.root)
+        ledger.record("tool_call_start", {"tool": "file_write"})
+        ledger.record("tool_call_end", {"tool": "file_write", "success": True})
+        original_receipts = ledger.path.read_text()
+        engine = SimpleNamespace(generate=Mock(side_effect=[TimeoutError("slow"), {"content": "continue"}]))
+        sleep = Mock()
+        policy = loop.RecoveryPolicy(32768, retries=2, sleep=sleep)
+        recorder = loop.RecordingEngine(engine, self.root, 32768, 2048, policy, ledger)
+        self.assertEqual(recorder.generate(self.messages)["content"], "continue")
+        self.assertEqual(engine.generate.call_count, 2)
+        self.assertIs(engine.generate.call_args_list[0].args[0], self.messages)
+        self.assertIs(engine.generate.call_args_list[1].args[0], self.messages)
+        self.assertEqual(ledger.path.read_text(), original_receipts)
+        sleep.assert_called_once_with(10)
+
+    def test_retry_budget_and_unknown_failures_stop(self):
+        engine = SimpleNamespace(generate=Mock(side_effect=TimeoutError("offline")))
+        sleep = Mock()
+        policy = loop.RecoveryPolicy(32768, retries=2, sleep=sleep)
+        recorder = loop.RecordingEngine(engine, self.root, 32768, 2048, policy)
+        with self.assertRaises(TimeoutError):
+            recorder.generate(self.messages)
+        self.assertEqual(engine.generate.call_count, 3)
+        self.assertEqual([c.args[0] for c in sleep.call_args_list], [10, 30])
+        engine.generate = Mock(side_effect=PermissionError("policy denied"))
+        with self.assertRaises(PermissionError):
+            recorder.generate(self.messages)
+        self.assertEqual(engine.generate.call_count, 1)
+        self.assertFalse(loop.transient_error(RuntimeError("Ollama returned 400: bad config")))
+        self.assertTrue(loop.transient_error(RuntimeError("Ollama returned 503: busy")))
+
+    def test_cycle_retry_budget_is_bounded_even_across_model_calls(self):
+        policy = loop.RecoveryPolicy(32768, retries=2, sleep=Mock())
+        policy.retries_used = 6
+        engine = SimpleNamespace(generate=Mock(side_effect=TimeoutError("offline")))
+        recorder = loop.RecordingEngine(engine, self.root, 32768, 2048, policy)
+        with self.assertRaises(TimeoutError):
+            recorder.generate(self.messages)
+        self.assertEqual(engine.generate.call_count, 1)
+
+    def test_context_grows_in_place_to_ceiling_and_keeps_all_rules(self):
+        engine = SimpleNamespace(generate=Mock(return_value={"content": "ok"}))
+        policy = loop.RecoveryPolicy(32768, 49152, sleep=Mock())
+        recorder = loop.RecordingEngine(engine, self.root, 32768, 2048, policy)
+        messages = [SimpleNamespace(role="user", content="RULE" * 17000)]
+        recorder.generate(messages)
+        self.assertEqual(policy.num_ctx, 40960)
+        self.assertIs(engine.generate.call_args.args[0], messages)
+        self.assertEqual(engine.generate.call_args.kwargs["num_ctx"], 40960)
+        recorder.generate([SimpleNamespace(role="user", content="RULE" * 21000)])
+        self.assertEqual(policy.num_ctx, 49152)
+        calls = engine.generate.call_count
+        with self.assertRaises(loop.ContextBudgetError):
+            recorder.generate([SimpleNamespace(role="user", content="RULE" * 30000)])
+        self.assertEqual(engine.generate.call_count, calls)
+
+    def test_pending_or_failed_write_blocks_inference_and_restart(self):
+        run_dir = self.root / "runs/20261011-run"
+        run_dir.mkdir(parents=True)
+        ledger = loop.ActionLedger(run_dir)
+        engine = SimpleNamespace(generate=Mock())
+        recorder = loop.RecordingEngine(engine, run_dir, 32768, 2048, ledger=ledger)
+        ledger.record("tool_call_start", {"tool": "shell_exec"})
+        loop.save_json(run_dir / "manifest.json", {"status": "RUNNING"})
+        with self.assertRaises(loop.UnsafeRecoveryError):
+            recorder.generate(self.messages)
+        with self.assertRaises(loop.UnsafeRecoveryError):
+            loop.check_previous_run(self.root)
+        ledger.record("tool_call_end", {"tool": "shell_exec", "success": False})
+        with self.assertRaises(loop.UnsafeRecoveryError):
+            recorder.generate(self.messages)
+        engine.generate.assert_not_called()
+
+    def test_failed_read_does_not_block_alternative_research(self):
+        ledger = loop.ActionLedger(self.root)
+        ledger.record("tool_call_start", {"tool": "web_search"})
+        ledger.record("tool_call_end", {"tool": "web_search", "success": False})
+        ledger.check()
+        ledger.record("tool_call_start", {"tool": "http_request", "arguments": {"method": "GET"}})
+        ledger.record("tool_call_end", {"tool": "http_request", "success": False})
+        ledger.check()
+        self.assertTrue(loop.potential_write("http_request", {"arguments": {"method": "POST"}}))
+        self.assertTrue(loop.potential_write("http_request", {"arguments": "broken JSON"}))
+
+    def test_completed_writes_are_not_replayed_on_restart(self):
+        run_dir = self.root / "runs/20261011-run"
+        run_dir.mkdir(parents=True)
+        ledger = loop.ActionLedger(run_dir)
+        ledger.record("tool_call_start", {"tool": "git_commit"})
+        ledger.record("tool_call_end", {"tool": "git_commit", "success": True})
+        loop.save_json(run_dir / "manifest.json", {"status": "FAILED"})
+        loop.check_previous_run(self.root)
+        self.assertEqual(len(ledger.actions), 1)
+
+    def test_keyboard_interrupt_never_retries(self):
+        policy = loop.RecoveryPolicy(32768, sleep=Mock())
+        engine = SimpleNamespace(generate=Mock(side_effect=KeyboardInterrupt))
+        recorder = loop.RecordingEngine(engine, self.root, 32768, 2048, policy)
+        with self.assertRaises(KeyboardInterrupt):
+            recorder.generate(self.messages)
+        policy.sleep.assert_not_called()
+
+    def test_continuity_notice_uses_only_same_mission_runtime_evidence(self):
+        run_dir = self.root / "runs/20261011-run"
+        run_dir.mkdir(parents=True)
+        loop.save_json(run_dir / "manifest.json", {"status": "FAILED", "mission_id": "fresh"})
+        notice = loop.previous_run_notice(self.root, "fresh")
+        self.assertIn("verify its actual outcome", notice)
+        self.assertIn(str(run_dir), notice)
+        self.assertEqual(loop.previous_run_notice(self.root, "other"), "")
+
+
+class CycleIntegrationTests(unittest.TestCase):
+    setUp = ContextTests.setUp
+    write_contract = ContextTests.write_contract
+
+    def test_two_cycles_reload_handoff_and_retry_model_without_replaying_actions(self):
+        config = self.root / "config.toml"
+        config.write_text("existing configuration")
+        cfg = SimpleNamespace(agent=SimpleNamespace(max_turns=60),
+                              intelligence=SimpleNamespace(max_tokens=2048, temperature=0.3))
+        outputs = [{"content": "first"}, TimeoutError("temporary"), {"content": "done"},
+                   {"content": "second"}, {"content": "done"}]
+        engine = SimpleNamespace(generate=Mock(side_effect=outputs), close=Mock())
+        observed = []
+        writes = []
+
+        class Bus:
+            def __init__(self):
+                self.callbacks = {}
+
+            def subscribe(self, kind, callback):
+                self.callbacks[kind.value] = callback
+
+            def emit(self, kind, **data):
+                self.callbacks[kind](SimpleNamespace(event_type=SimpleNamespace(value=kind), data=data))
+
+        def agent(**kwargs):
+            observed.append(kwargs["query_text"])
+            messages = [SimpleNamespace(role="user", content=kwargs["query_text"])]
+            kwargs["engine"].generate(messages)
+            bus = kwargs["bus"]
+            bus.emit("tool_call_start", tool="web_search")
+            bus.emit("tool_call_end", tool="web_search", success=True, result="mock source")
+            bus.emit("tool_call_start", tool="file_write")
+            handoff = "CONTINUE " + str(len(observed))
+            (self.root / "logs/CURRENT_WORK.md").write_text(handoff)
+            writes.append(handoff)
+            bus.emit("tool_call_end", tool="file_write", success=True, result="saved")
+            kwargs["engine"].generate(messages)
+            return SimpleNamespace(content="done", turns=2, metadata={}, tool_results=[
+                SimpleNamespace(tool_name="web_search", success=True, content="mock source"),
+                SimpleNamespace(tool_name="file_write", success=True, content="saved")])
+
+        modules = {
+            "openjarvis.core.events": SimpleNamespace(EventBus=Bus, EventType=SimpleNamespace(
+                TOOL_CALL_START=SimpleNamespace(value="tool_call_start"),
+                TOOL_CALL_END=SimpleNamespace(value="tool_call_end"))),
+            "openjarvis.engine": SimpleNamespace(get_engine=lambda *a: ("ollama", engine)),
+            "openjarvis.security": SimpleNamespace(setup_security=lambda *a: SimpleNamespace(engine=engine)),
+            "openjarvis.cli.ask": SimpleNamespace(_run_agent=agent),
+        }
+        policy = loop.RecoveryPolicy(32768, sleep=Mock())
+        with patch.dict(sys.modules, modules), patch.object(loop, "prepare_runtime", return_value=(
+                cfg, "operative", "local", ["file_read", "file_write", "web_search"], [])):
+            first = loop.run_cycle(self.root, config, self.prompt, policy.num_ctx, policy)
+            second = loop.run_cycle(self.root, config, self.prompt, policy.num_ctx, policy)
+        self.assertEqual((first, second), ("CYCLE_RETURNED", "CYCLE_RETURNED"))
+        self.assertEqual(writes, ["CONTINUE 1", "CONTINUE 2"])
+        self.assertIn("CONTINUE 1", observed[1])
+        self.assertNotIn("NOT_STARTED\n===== END FILE", observed[1])
+        self.assertEqual(engine.generate.call_count, 5)
+        self.assertEqual(config.read_text(), "existing configuration")
 
 
 if __name__ == "__main__":
