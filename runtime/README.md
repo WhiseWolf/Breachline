@@ -179,7 +179,9 @@ Intervall lädt ein frischer Agent die aktuellen Briefings und aktiven Logs sowi
 Verweis auf die vorige Ausführung. Werkzeuge werden dabei nicht erneut abgespielt.
 Der Status bestätigt weder die Qualität des Checkpoints noch eine abgeschlossene
 Recherchephase. Jarvis muss Belege und vorgeschlagene nächste Schritte erneut gegen
-Briefing und Freigaben prüfen; ein Auftrag zum Hosting ist keine Deployment-Freigabe.
+Briefing und Freigaben prüfen. GitHub-Pages-Testhosting ist im dokumentierten Umfang
+der Nutzerfreigabe vom 2026-10-11 erlaubt; der Scheduler erteilt keine zusätzlichen
+Rechte und richtet Pages nicht selbst ein.
 
 Nach drei aufeinanderfolgenden Kontextübergaben pausiert der Prozess. Ohne geänderten
 Checkpoint oder bei ungeklärten Schreibaktionen stoppt er sofort. Passt bereits der

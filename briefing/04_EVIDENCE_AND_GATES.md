@@ -39,3 +39,6 @@ Bot-Replays, Views und simulierte Daten sind keine menschliche Retention.
 
 ## Prüfung vor jedem Phasenabschluss
 Mengen, Dokumentänderungen und Selbstscores sind keine Gate-Nachweise. Gemäß 03_RESEARCH_PROTOCOL dokumentieren: tragende Beleg-IDs, stärkste alternative Erklärung/Gegenprüfung, verbleibende Unsicherheit, begründete nächste Aktion und Bedingung zur Wiederöffnung. Teilfortschritt präzise benennen; ein abgeschlossener Abruf/Eintrag ist keine abgeschlossene Forschung. Fehlende menschliche Nutzungsdaten nicht durch Konzepttexte oder Botläufe ersetzen.
+
+## Kleine öffentliche Spielertests
+Die bestehenden Freigaben in 13_AUTHORIZATIONS.md erlauben kleine, lokal geprüfte Pages-Prototypen und organische Spieltest-Aufrufe vor Gate C. Dies dient der Gewinnung menschlicher Evidenz, nicht der Behauptung, Gate C sei bereits erfüllt. Hosting und Bekanntmachung folgen einer prüfbaren Testfrage. NO_PLAYER_DATA ist fehlende Evidenz; Reichweite, technische Zugänglichkeit und Spielerwert getrennt bewerten.

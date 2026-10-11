@@ -1,6 +1,6 @@
 {
   "project": "Local Browser Game Discovery Agent",
-  "version": 2.2,
+  "version": 2.3,
   "primary_brief": "AGENT_BRIEFING_FULL.md",
   "required_context_files": [
     "00_README_FIRST.md",
@@ -60,7 +60,7 @@
     "enforcement": "descriptive; runtime loader implementation must be verified",
     "log_paths": "Relative to directory containing this config; ../logs means sibling of briefing directory."
   },
-  "external_actions_require_user_scope": "Only actions requiring approval under Constitution: public uploads/posts, account creation, payment, irreversible external actions, sensitive decisions and non-authorized system changes. Public read-only research does not require new approval.",
+  "external_actions_require_user_scope": "Only actions requiring approval under Constitution: public uploads/posts, account creation, payment, irreversible external actions, sensitive decisions and non-authorized system changes. Public read-only research does not require new approval. Existing documented approval may be used without renewed confirmation; GitHub Pages prototype test hosting is authorized within briefing/13_AUTHORIZATIONS.md scope.",
   "paid_services_allowed": false,
   "user_action_approval_overrides_budget": false,
   "mission_id": "FRESH_DISCOVERY_2026_10_09",
@@ -102,5 +102,31 @@
     "../repo/logs/",
     "historical scheduler outcomes",
     "previous mission memory"
-  ]
+  ],
+  "authorized_external_actions": {
+    "github_pages_prototype_test_hosting": {
+      "authorization": "13_AUTHORIZATIONS.md: GitHub-Pages-Testhosting — Freigabe 2026-10-11",
+      "repository": "WhiseWolf/Breachline",
+      "requires_local_test": true,
+      "requires_purpose_and_evidence": true,
+      "additional_cost_limit_eur": 0,
+      "main_changes_allowed": false,
+      "logs_and_secrets_upload_allowed": false,
+      "enforcement": "descriptive; verify actual runtime permissions and deployment state"
+    },
+    "organic_social_playtest_publicity": {
+      "authorization": "13_AUTHORIZATIONS.md: Organische Bekanntmachung für Spielertests — Freigabe 2026-10-11",
+      "platforms": [
+        "TikTok",
+        "Instagram",
+        "YouTube"
+      ],
+      "verified_existing_project_accounts_only": true,
+      "paid_promotion_allowed": false,
+      "new_accounts_allowed": false,
+      "direct_messages_allowed": false,
+      "per_post_renewed_approval_required": false,
+      "account_state": "No project accounts exist on Instagram, YouTube or TikTok, per user 2026-10-11. Posting authorization is conditional on later verified accounts; account creation is not authorized."
+    }
+  }
 }

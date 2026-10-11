@@ -5,8 +5,13 @@ die bestehende config.toml bestimmt Modell, Agent, Werkzeuge und Laufgrenzen.
 Nutze das aktive logs/CURRENT_WORK.md als Fortsetzungsstand und prüfe seinen nächsten
 Auftrag gegen das aktuelle Briefing. Korrigiere veraltete Mengenziele oder voreilige
 Phasenwechsel mit Begründung; bewahre gültige Ergebnisse. Drei Kandidaten allein
-schließen keine Recherche ab. Ein vorgeschlagener Auftrag zum Hosting erteilt keine
-Freigabe für Veröffentlichung oder Deployment; erlaube zunächst lokale Tests.
+schließen keine Recherche ab. Nutze die dokumentierte GitHub-Pages-Freigabe in
+13_AUTHORIZATIONS.md: sinnvolles, kostenloses Testhosting nach lokalem Funktionstest
+ist autonom erlaubt. Prüfe Scope und tatsächliche Berechtigungen; ein vorgeschlagener
+Auftrag allein erweitert keine Freigabe. Nutze auch die dokumentierte Freigabe für
+organische Spieltest-Aufrufe auf verifizierten vorhandenen Projekt-Social-Accounts.
+Eine öffentliche Testseite allein liefert keine Spieler: Bekanntmachung, tatsächliches
+Spielverhalten und Iteration als getrennte belegbare Schritte planen.
 NOT_STARTED gilt nur vor Beginn dieser Mission: initialisiere keine bereits begonnene
 Arbeit erneut. Nutze keine früheren Scheduler-Aufträge, Archive oder Missions-Memory.
 Keine Vorgabe für Genre, Zielgruppe, Sessionlänge oder Ideenmenge; Breachline hat
