@@ -174,9 +174,13 @@ explizitem working_dir prüfen. Das Briefing für main/game-Zweige bleibt maßge
 Beim Start prüft der Scheduler den vorhandenen letzten Run erneut. Nur ein gepaarter,
 abgeschlossener Docker-Fehler mit vollständig gespeicherten FileNotFoundError-
 Traceback darf als FAILED_ISOLATED geprüft werden. Dafür müssen die installierte
-Docker-Implementierung **und** die Standard-Tool-Fabrik exakt den geprüften
-AST-Fingerprints des offiziellen Codes entsprechen. Eine angepasste/unbekannte
-Version, Timeout, fehlende Rückgabe, fremder Artefaktpfad oder weitere unklare
+Konstruktor und execute-Methode der Docker-Implementierung den geprüften
+AST-Fingerprints entsprechen. Docstrings, Beschreibungen und Kommentare sind
+für diese Prüfung unerheblich. Die Factory wird ohne Ausführung entlang des
+Docker-Zweigs geprüft: ausschließlich Standardinstanziierung tool_cls() ohne
+Argumente oder weitere ausgeführte Schritte. Unbenutzte Memory-/Channel-Zweige
+dürfen zwischen Versionen variieren. Unbekannte Ausführungsänderungen, Timeout,
+fehlende Rückgabe, fremder Artefaktpfad oder weitere unklare
 Host-/Shell-/Social-Aktion bleibt gesperrt. Es wird kein Container ausgeführt.
 
 Die Prüfung schreibt isolated_action_review.json mit Quelldigest, Ergebnisdigest,
@@ -187,7 +191,11 @@ nicht wiederholt. FAILED_ISOLATED ist kein erfolgreicher Spielbau.
 
 Nach dem Update mit den obigen pull-/Startbefehlen sollte beim gezeigten Fehler
 RECOVERY ISOLATED_FAILURE_REVIEW erscheinen. Falls die installierte Implementierung
-abweicht, bleibt eine konkrete Prüfung erforderlich; keine Protokolle löschen.
+abweicht, erklärt RECOVERY SOURCE_CHECK_BLOCKED den konkreten Grund und bei
+Methodenänderungen den tatsächlichen AST-Digest samt Quelldatei. Fehler bei
+Ereignispaarung oder Resultaten melden RECOVERY EVENTS_BLOCKED bzw.
+RECOVERY RESULT_BLOCKED. Eine konkrete Prüfung bleibt dann erforderlich;
+keine Protokolle löschen.
 Bei einem erneuten Fehler speichert failure_snapshot.json die tatsächliche
 Nachrichtenhistorie und Aktionsbelege, auch wenn ein normaler Checkpoint gesperrt
 ist. Zurückgegebene Antwort/Tool-Ergebnisse werden vor der Abschlussprüfung gesichert.

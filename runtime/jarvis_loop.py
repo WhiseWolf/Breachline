@@ -52,16 +52,69 @@ READ_ONLY_TOOLS = {"file_read", "git_status", "git_diff", "git_log", "web_search
 
 # Container-scoped tools are not the host project's filesystem/shell tools.
 HOST_INCOMPATIBLE_TOOLS = {"code_interpreter_docker", "docker_shell_exec"}
-DOCKER_SOURCE_AST_SHA256 = "d09f7839ca9362aa0e6ba1f79f610c822389411ba1e0338c01dd2cde24eafbde"
-TOOL_FACTORY_AST_SHA256 = "608bbaad78101d2bbb0a9bcdf3eccf1848b7ba7313ce411664cacca0af81c11a"
+DOCKER_METHOD_AST_SHA256 = {
+    "__init__": "c9836cc7fab3aff106acae7cf3c0fd30b24ed8690171cb1ced2a8dac8caabb34",
+    "execute": "a639dd5013be79a08a40d12c42594d6e0b067e3a8625dcb1fe8256d8d9eed9de",
+}
+
+
+def ast_fingerprint(node):
+    node = copy.deepcopy(node)
+    # Documentation does not affect the runtime isolation contract.
+    for item in ast.walk(node):
+        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if item.body and isinstance(item.body[0], ast.Expr) and isinstance(item.body[0].value, ast.Constant) and isinstance(item.body[0].value.value, str):
+                item.body.pop(0)
+    return digest(ast.dump(node, include_attributes=False).encode())
+
+
+def default_docker_factory(factory):
+    """Check only the factory path for this tool, without invoking the factory.
+
+    Unselected memory/channel branches may differ between OpenJarvis releases.
+    Only known name tests are interpreted; unknown executed statements fail closed.
+    """
+    tree = ast.parse(textwrap.dedent(inspect.getsource(factory))).body[0]
+    name = "code_interpreter_docker"
+    def same(node, code):
+        return ast.dump(node, include_attributes=False) == ast.dump(ast.parse(code).body[0], include_attributes=False)
+    def condition(node):
+        code = ast.unparse(node)
+        if code in {"not name", "not ToolRegistry.contains(name)"}:
+            return False
+        if isinstance(node, ast.Compare) and isinstance(node.left, ast.Name) and node.left.id == "name" and len(node.ops) == 1:
+            right = node.comparators[0]
+            if isinstance(node.ops[0], ast.Eq) and isinstance(right, ast.Constant) and isinstance(right.value, str):
+                return name == right.value
+            if isinstance(node.ops[0], ast.In) and isinstance(right, ast.Name) and right.id in {"_MEMORY_TOOLS", "_CHANNEL_TOOLS"}:
+                values = factory.__globals__.get(right.id)
+                if type(values) in {set, frozenset, list, tuple} and all(type(v) is str for v in values):
+                    return name in values
+        raise ValueError("unknown tool-factory condition: " + code)
+    selected = []
+    def visit(statements):
+        for node in statements:
+            if isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                continue
+            if same(node, "from openjarvis.core.registry import ToolRegistry"):
+                continue
+            if isinstance(node, ast.For):
+                if not isinstance(node.target, ast.Name) or node.target.id != "name" or not isinstance(node.iter, ast.Name) or node.iter.id != "tool_names" or node.orelse:
+                    raise ValueError("unknown tool-factory loop")
+                visit(node.body)
+            elif isinstance(node, ast.If):
+                visit(node.body if condition(node.test) else node.orelse)
+            else:
+                selected.append(node)
+    visit(tree.body)
+    expected = ast.parse("tools = []\nname = name.strip()\ntool_cls = ToolRegistry.get(name)\ntools.append(tool_cls())\nreturn tools").body
+    if [ast.dump(n, include_attributes=False) for n in selected] != [ast.dump(n, include_attributes=False) for n in expected]:
+        raise ValueError("Docker factory does not follow the audited no-argument construction path")
+    return ast_fingerprint(tree)
 
 
 def isolated_docker_proof():
-    """Fail closed unless the installed tool matches the audited upstream source.
-
-    No container or code is executed. The vetted implementation has no mounts,
-    a read-only root, disabled network, temporary /tmp and container removal.
-    """
+    """Check registered implementation and default construction without execution."""
     try:
         import openjarvis.tools
         from openjarvis.core.registry import ToolRegistry
@@ -69,20 +122,25 @@ def isolated_docker_proof():
         from openjarvis.cli.ask import _build_tools
         cls = ToolRegistry.get("code_interpreter_docker")
         if cls is not DockerCodeInterpreterTool:
-            return None
-        source = Path(inspect.getfile(cls)).read_text()
-        fingerprint = digest(ast.dump(ast.parse(source), include_attributes=False).encode())
-        if fingerprint != DOCKER_SOURCE_AST_SHA256:
-            return None
-        factory = ast.parse(textwrap.dedent(inspect.getsource(_build_tools))).body[0]
-        factory_fingerprint = digest(ast.dump(factory, include_attributes=False).encode())
-        if factory_fingerprint != TOOL_FACTORY_AST_SHA256:
-            return None
-        return {"source_ast_sha256": fingerprint,
+            raise ValueError("registered Docker class differs from the audited tool")
+        source_path = Path(inspect.getfile(cls)).resolve()
+        fingerprints = {}
+        for method, expected in DOCKER_METHOD_AST_SHA256.items():
+            function = cls.__dict__.get(method)
+            if function is None:
+                raise ValueError("missing Docker method: " + method)
+            node = ast.parse(textwrap.dedent(inspect.getsource(function))).body[0]
+            actual = ast_fingerprint(node)
+            fingerprints[method] = actual
+            if actual != expected:
+                raise ValueError(f"Docker {method} differs: AST SHA256 {actual}; source {source_path}")
+        factory_fingerprint = default_docker_factory(_build_tools)
+        return {"method_ast_sha256": fingerprints,
                 "tool_factory_ast_sha256": factory_fingerprint,
-                "source": str(Path(inspect.getfile(cls)).resolve()),
-                "basis": "audited upstream default tool: no host mounts, no network"}
-    except (ImportError, KeyError, OSError, TypeError, SyntaxError):
+                "source": str(source_path),
+                "basis": "audited constructor and execution, default construction: no host mounts, no network"}
+    except (ImportError, KeyError, OSError, TypeError, SyntaxError, ValueError, AttributeError) as exc:
+        print(f"RECOVERY SOURCE_CHECK_BLOCKED: {type(exc).__name__}: {exc}", flush=True)
         return None
 
 
@@ -116,9 +174,11 @@ def review_isolated_failures(run_dir, actions):
             pending = next((p for p in reversed(paired)
                             if p["tool"] == name and p["end"] is None), None)
             if pending is None:
+                print("RECOVERY EVENTS_BLOCKED: end event has no matching start", flush=True)
                 return actions
             pending["end"] = event
     if len(paired) != len(actions) or any(p["tool"] != a["tool"] for p, a in zip(paired, actions)):
+        print("RECOVERY EVENTS_BLOCKED: events and receipts differ", flush=True)
         return actions
     reviewed = copy.deepcopy(actions)
     evidence = []
@@ -141,6 +201,8 @@ def review_isolated_failures(run_dir, actions):
                 if (run_dir / "action_receipts.json").is_file() else None,
             "actions": reviewed, "note": "Original failures retained. No actions replayed; no task success claimed."})
         print(f"[{now()}] RECOVERY ISOLATED_FAILURE_REVIEW: {run_dir}", flush=True)
+    if not evidence:
+        print("RECOVERY RESULT_BLOCKED: no paired completed Docker FileNotFoundError with a readable result inside this run", flush=True)
     return reviewed
 
 

@@ -372,7 +372,7 @@ class RecoveryTests(unittest.TestCase):
 
     def test_completed_audited_isolated_failure_allows_corrected_next_inference(self):
         ledger = loop.ActionLedger(self.root)
-        ledger.docker_proof = {"source_ast_sha256": loop.DOCKER_SOURCE_AST_SHA256}
+        ledger.docker_proof = {"source_ast_sha256": loop.DOCKER_METHOD_AST_SHA256["execute"]}
         ledger.record("tool_call_start", {"tool": "code_interpreter_docker"})
         ledger.record("tool_call_end", {"tool": "code_interpreter_docker",
                                       "success": False, "result": self.path_error()})
@@ -464,32 +464,56 @@ class RecoveryTests(unittest.TestCase):
         with self.assertRaises(loop.UnsafeRecoveryError):
             ledger.check()
 
-    def test_runtime_proof_requires_both_exact_tool_and_default_factory(self):
-        import ast
-        cls = type("DockerCodeInterpreterTool", (), {})
-        source = "class DockerCodeInterpreterTool:\n    pass\n"
-        factory = "def _build_tools():\n    return tool_cls()\n"
-        source_path = self.root / "tool.py"
-        source_path.write_text(source)
-        source_hash = loop.digest(ast.dump(ast.parse(source), include_attributes=False).encode())
-        factory_hash = loop.digest(ast.dump(ast.parse(factory).body[0], include_attributes=False).encode())
+    def test_factory_accepts_default_docker_path_across_unused_branch_versions(self):
+        factories = [
+            'def _build_tools(tool_names):\n    tools = []\n    for name in tool_names:\n        name = name.strip()\n        if not name:\n            continue\n        if not ToolRegistry.contains(name):\n            continue\n        tool_cls = ToolRegistry.get(name)\n        tools.append(tool_cls())\n    return tools\n',
+            'def _build_tools(tool_names):\n    "different documentation"\n    from openjarvis.core.registry import ToolRegistry\n    tools = []\n    for name in tool_names:\n        name = name.strip()\n        if not name:\n            continue\n        if not ToolRegistry.contains(name):\n            continue\n        tool_cls = ToolRegistry.get(name)\n        if name in _MEMORY_TOOLS:\n            arbitrary_memory_code()\n        elif name in _CHANNEL_TOOLS:\n            arbitrary_channel_code()\n        else:\n            tools.append(tool_cls())\n    return tools\n',
+        ]
+        factory = SimpleNamespace(__globals__={"_MEMORY_TOOLS": {"memory_search"}, "_CHANNEL_TOOLS": {"channel_send"}})
+        for source in factories:
+            with patch.object(loop.inspect, "getsource", return_value=source):
+                self.assertTrue(loop.default_docker_factory(factory))
+        with patch.object(loop.inspect, "getsource", return_value=factories[1]):
+            factory.__globals__["_MEMORY_TOOLS"].add("code_interpreter_docker")
+            with self.assertRaises(ValueError):
+                loop.default_docker_factory(factory)
+
+    def test_factory_rejects_docker_customization_and_extra_executed_code(self):
+        source = 'def _build_tools(tool_names):\n    tools = []\n    for name in tool_names:\n        name = name.strip()\n        tool_cls = ToolRegistry.get(name)\n        tools.append(tool_cls())\n    return tools\n'
+        for changed in [source.replace('tool_cls()', 'tool_cls(network_disabled=False)'),
+                        source.replace('tools = []', 'configure_host_mounts()\n    tools = []'),
+                        source.replace('tools.append(tool_cls())', 'if config.custom:\n            tools.append(tool_cls())')]:
+            with patch.object(loop.inspect, "getsource", return_value=changed):
+                with self.assertRaises(ValueError):
+                    loop.default_docker_factory(SimpleNamespace(__globals__={}))
+
+    def test_runtime_proof_checks_methods_registry_and_factory(self):
+        init, execute = Mock(), Mock()
+        cls = type("DockerCodeInterpreterTool", (), {"__init__": init, "execute": execute})
+        sources = {id(init): 'def __init__(self):\n    self._network_disabled = True\n',
+                   id(execute): 'def execute(self):\n    return None\n'}
+        factory = SimpleNamespace(__globals__={})
+        sources[id(factory)] = 'def _build_tools(tool_names):\n    tools = []\n    for name in tool_names:\n        name = name.strip()\n        tool_cls = ToolRegistry.get(name)\n        tools.append(tool_cls())\n    return tools\n'
+        hashes = {name: loop.ast_fingerprint(loop.ast.parse(sources[id(method)]).body[0]) for name, method in [("__init__", init), ("execute", execute)]}
         modules = {"openjarvis": SimpleNamespace(tools=SimpleNamespace()),
                    "openjarvis.tools": SimpleNamespace(),
                    "openjarvis.core.registry": SimpleNamespace(ToolRegistry=SimpleNamespace(get=lambda name: cls)),
                    "openjarvis.tools.code_interpreter_docker": SimpleNamespace(DockerCodeInterpreterTool=cls),
-                   "openjarvis.cli.ask": SimpleNamespace(_build_tools=Mock())}
+                   "openjarvis.cli.ask": SimpleNamespace(_build_tools=factory)}
         with patch.dict(sys.modules, modules), \
-             patch.object(loop.inspect, "getfile", return_value=str(source_path)), \
-             patch.object(loop.inspect, "getsource", return_value=factory), \
-             patch.object(loop, "DOCKER_SOURCE_AST_SHA256", source_hash), \
-             patch.object(loop, "TOOL_FACTORY_AST_SHA256", factory_hash):
-            self.assertEqual(loop.isolated_docker_proof()["source_ast_sha256"], source_hash)
-            with patch.object(loop, "TOOL_FACTORY_AST_SHA256", "changed"):
-                self.assertIsNone(loop.isolated_docker_proof())
-            with patch.object(loop, "DOCKER_SOURCE_AST_SHA256", "changed"):
-                self.assertIsNone(loop.isolated_docker_proof())
+             patch.object(loop.inspect, "getfile", return_value=str(self.root / "tool.py")), \
+             patch.object(loop.inspect, "getsource", side_effect=lambda obj: sources[id(obj)]), \
+             patch.object(loop, "DOCKER_METHOD_AST_SHA256", hashes):
+            self.assertEqual(loop.isolated_docker_proof()["method_ast_sha256"], hashes)
+            sources[id(execute)] = sources[id(execute)].replace('return None', 'mount_host()')
+            self.assertIsNone(loop.isolated_docker_proof())
+            sources[id(execute)] = 'def execute(self):\n    "harmless new docs"\n    return None\n'
+            self.assertIsNotNone(loop.isolated_docker_proof())
+            sources[id(factory)] = sources[id(factory)].replace('tool_cls()', 'tool_cls(network_disabled=False)')
+            self.assertIsNone(loop.isolated_docker_proof())
             modules["openjarvis.core.registry"].ToolRegistry.get = lambda name: type("CustomDocker", (), {})
             self.assertIsNone(loop.isolated_docker_proof())
+
 
 
 class CycleIntegrationTests(unittest.TestCase):
