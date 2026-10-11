@@ -95,5 +95,34 @@ class ContextTests(unittest.TestCase):
         self.assertEqual(recorder.calls, 0)
 
 
+class ToolSelectionTests(unittest.TestCase):
+    def registry(self, *extra):
+        available = {"file_read", "file_write", "shell_exec", *extra}
+        return SimpleNamespace(contains=lambda name: name in available)
+
+    def test_missing_configured_shell_is_added_and_lists_are_merged(self):
+        names, _, added = loop.select_tools("file_read,apply_patch", "file_write,git_diff", self.registry("apply_patch", "git_diff"))
+        self.assertEqual(set(names), {"file_read", "file_write", "shell_exec", "apply_patch", "git_diff"})
+        self.assertIn("shell_exec", added)
+        self.assertEqual(len(names), len(set(names)))
+
+    def test_empty_config_still_wires_execution_baseline(self):
+        names, _, _ = loop.select_tools("", "", self.registry())
+        self.assertEqual(names, ["file_read", "file_write", "shell_exec"])
+
+    def test_unknown_implementation_fails_explicitly(self):
+        with self.assertRaisesRegex(ValueError, "not registered"):
+            loop.select_tools("imaginary_tool", "", self.registry())
+        with self.assertRaisesRegex(ValueError, "implementations unavailable"):
+            loop.select_tools("", "", SimpleNamespace(contains=lambda n: n != "shell_exec"))
+
+    def test_history_tools_are_excluded_and_optional_tools_checked(self):
+        names, excluded, _ = loop.select_tools("memory_search,file_read", "file_read", self.registry("web_search"))
+        self.assertNotIn("memory_search", names)
+        self.assertIn("memory_search", excluded)
+        self.assertIn("web_search", names)
+        self.assertNotIn("web_fetch", names)
+
+
 if __name__ == "__main__":
     unittest.main()

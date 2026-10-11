@@ -66,6 +66,29 @@ def load_context(workspace, start_prompt):
     return "\n".join(parts), records, contract
 
 
+def select_tools(agent_tools, enabled_tools, registry):
+    """Merge configured tools and explicitly wire the local execution baseline."""
+    excluded = {"retrieval", "memory_store", "memory_search", "memory_index", "memory_retrieve"}
+    names = []
+    for configured in (agent_tools, enabled_tools):
+        values = configured.split(",") if isinstance(configured, str) else (configured or [])
+        names.extend(name.strip() for name in values if name.strip() and name.strip() not in excluded)
+    names = list(dict.fromkeys(names))
+    missing = [name for name in names if not registry.contains(name)]
+    if missing:
+        raise ValueError(f"Configured tools not registered: {missing}. No tools silently dropped.")
+    required = ["file_read", "file_write", "shell_exec"]
+    unavailable = [name for name in required if not registry.contains(name)]
+    if unavailable:
+        raise ValueError(f"Required local tool implementations unavailable: {unavailable}")
+    added = []
+    for name in required + ["apply_patch", "git_status", "git_diff", "web_search", "web_fetch"]:
+        if registry.contains(name) and name not in names:
+            names.append(name)
+            added.append(name)
+    return names, sorted(excluded), added
+
+
 def prepare_runtime(config_path):
     import openjarvis.agents
     import openjarvis.tools
@@ -79,25 +102,19 @@ def prepare_runtime(config_path):
     model = cfg.intelligence.default_model
     if not model or "cloud" in model.lower():
         raise ValueError("An explicit local model is required in config.toml")
-    configured = cfg.agent.tools or cfg.tools.enabled
-    names = [x.strip() for x in configured.split(",") if x.strip()] if isinstance(configured, str) else list(configured)
-    if not names:
-        raise ValueError("No configured tools: set [agent] tools or [tools] enabled")
-    # Historical mission memory is deliberately not mounted in this new loop.
-    excluded = {"retrieval", "memory_store", "memory_search", "memory_index", "memory_retrieve"}
-    names = [name for name in dict.fromkeys(names) if name not in excluded]
-    missing = [name for name in names if not ToolRegistry.contains(name)]
-    if missing:
-        raise ValueError(f"Configured tools not registered: {missing}. No tools silently dropped.")
-    if not {"file_read", "file_write", "shell_exec"}.issubset(names):
-        raise ValueError("This loop needs file_read,file_write,shell_exec in the configured tool list")
+    names, excluded, added = select_tools(cfg.agent.tools, cfg.tools.enabled, ToolRegistry)
+    if "web_search" in names:
+        # No API-key based auto-selection of a potentially paid search provider.
+        os.environ["OPENJARVIS_WEB_SEARCH_ENGINE"] = "duckduckgo"
+    print("Werkzeuge: " + ", ".join(names), flush=True)
+    print("Vom Scheduler ergänzt: " + (", ".join(added) or "keine"), flush=True)
     cfg.agent.context_from_memory = False
     if hasattr(cfg, "memory_files"):
         cfg.memory_files.soul_path = ""
         cfg.memory_files.memory_path = ""
         cfg.memory_files.user_path = ""
         cfg.memory_files.persona_name = ""
-    return cfg, agent_name, model, names, sorted(excluded)
+    return cfg, agent_name, model, names, excluded
 
 
 class RecordingEngine:

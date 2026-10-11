@@ -2,7 +2,10 @@
 
 Dieser Scheduler verwendet `/home/pagi/.openjarvis/config.toml` als Runtime-Konfiguration.
 Modell, Agent, Temperatur, max_tokens, max_turns und konfigurierte lokale Werkzeuge
-werden daraus gelesen. Keine neue config.toml wird erzeugt und keine Laufgrenze erhöht.
+werden daraus gelesen. Toollisten aus [agent] und [tools] werden zusammengeführt.
+Die registrierten Basiswerkzeuge file_read, file_write und shell_exec werden explizit
+ergänzt, wenn sie in der TOML-Liste fehlen. Keine neue config.toml wird erzeugt und
+keine Laufgrenze erhöht.
 `briefing/agent_config.json` bestimmt ausschließlich die aktiven Arbeitsdateien.
 
 ## Installation und Start auf dem vorhandenen Ubuntu
@@ -61,7 +64,13 @@ Es wird hier kein Boot-Autostart eingerichtet.
 ## Voraussetzungen und Grenzen
 
 Die konfigurierte Agentklasse muss Werkzeuge unterstützen; `operative` ist geeignet.
-Die konfigurierte Toolliste benötigt `file_read`, `file_write`, `shell_exec`.
+Der Scheduler ergänzt `file_read`, `file_write`, `shell_exec` aus der lokalen Registry.
+Sind deren Implementierungen nicht registriert, stoppt er mit dem tatsächlichen Fehler.
+Zusätzlich werden apply_patch, git_status, git_diff, web_search und web_fetch aktiviert,
+soweit diese Namen lokal registriert sind. Websuche nutzt ausdrücklich duckduckgo,
+keine API-Key-basierte automatische Auswahl. Browser-/Blender-Installation ist damit
+nicht bestätigt; diese Fähigkeiten kann der Agent über shell_exec projektlokal
+einrichten und muss sie durch echte Tests belegen.
 Weitere konfigurierte registrierte Werkzeuge werden übernommen. Unbekannte Tools
 werden als Fehler angezeigt und nicht lautlos verworfen. MCP-only Tools werden von
 diesem ersten Scheduler nicht unterstützt: dieser Adapter folgt dem lokalen CLI-
