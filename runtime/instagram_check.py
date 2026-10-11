@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+from urllib.parse import urlencode
 
 def main():
     path = Path.home() / ".config" / "breachline-agent" / "instagram.json"
@@ -18,8 +19,10 @@ def main():
         return 1
 
     request = Request(
-        "https://graph.instagram.com/v26.0/me?fields=user_id,username",
-        headers={"Authorization": "Bearer " + token}
+        "https://graph.instagram.com/v26.0/me?" + urlencode({
+            "fields": "user_id,username", "access_token": token
+        }),
+        headers={"Accept": "application/json", "User-Agent": "BreachlineAgent-InstagramCheck/1.1"}
     )
     try:
         with urlopen(request, timeout=30) as response:
@@ -46,12 +49,18 @@ def main():
         return 0
     except HTTPError as error:
         print("Instagram-Fehler: HTTP " + str(error.code))
+        raw = error.read(8192).decode("utf-8", errors="replace").replace(token, "[TOKEN]")
         try:
-            details = json.loads(error.read().decode("utf-8")).get("error", {})
-            print("API-Code: " + str(details.get("code", "unbekannt")))
-            print(str(details.get("message", "Keine Fehlerbeschreibung")).replace(token, "[TOKEN]")[:1000])
-        except (ValueError, AttributeError, UnicodeError):
-            print("Instagram lieferte keine lesbare Fehlerbeschreibung.")
+            payload = json.loads(raw)
+            details = payload.get("error", payload) if isinstance(payload, dict) else payload
+            if isinstance(details, dict):
+                print("API-Code: " + str(details.get("code", "unbekannt")))
+                print(str(details.get("message", json.dumps(details, ensure_ascii=False)))[:1500])
+            else:
+                print(str(details)[:1500])
+        except ValueError:
+            print("Antwortformat: " + str(error.headers.get("Content-Type", "unbekannt")))
+            print("Antwort: " + (raw[:1500] or "(leer)"))
         return 1
     except (URLError, OSError, TimeoutError):
         print("FEHLER: Verbindung zu Instagram fehlgeschlagen. Internet und Systemzeit pruefen.")
