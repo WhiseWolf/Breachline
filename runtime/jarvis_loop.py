@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import fcntl
 import hashlib
 import inspect
@@ -118,7 +119,7 @@ def prepare_runtime(config_path):
 
 
 class RecordingEngine:
-    """Record the hash of each actual engine input; never silently truncate it."""
+    """Preserve rules and archive long tool output before compacting model input."""
     def __init__(self, engine, run_dir, num_ctx, max_tokens):
         self.engine = engine
         self.run_dir = run_dir
@@ -129,19 +130,51 @@ class RecordingEngine:
     def __getattr__(self, name):
         return getattr(self.engine, name)
 
+    def compact_outputs(self, messages, limit):
+        forwarded = list(messages)
+        changed = False
+        for index, message in enumerate(messages):
+            role = str(getattr(message.role, "value", message.role)).lower().split(".")[-1]
+            text = message.content or ""
+            if role not in {"tool", "assistant"} or len(text) <= limit:
+                continue
+            # Keep every user/system instruction intact and preserve tool-call IDs.
+            artifact = self.run_dir / ("message-" + digest(text.encode())[:20] + ".txt")
+            if not artifact.exists():
+                artifact.write_text(text)
+            half = max(1, limit // 2)
+            replacement = copy.copy(message)
+            replacement.content = (
+                text[:half] + f"\n[CONTEXT COMPACTED: complete {role} output, {len(text)} characters, "
+                f"saved at {artifact}; read relevant sections with tools if needed. "
+                "Omitted content is not automatically verified.]\n" + text[-half:])
+            forwarded[index] = replacement
+            changed = True
+        return forwarded if changed else messages
+
     def generate(self, messages, **kwargs):
-        serialized = json.dumps([{"role": str(m.role), "content": m.content} for m in messages], ensure_ascii=False)
         tools = json.dumps(kwargs.get("tools", []), ensure_ascii=False)
+        forwarded = messages
+        compacted = False
         # Conservative planning estimate, not an exact tokenizer measurement.
-        estimated = (len(serialized.encode()) + len(tools.encode())) // 2 + self.max_tokens
+        for limit in (2048, 512, 128):
+            forwarded = self.compact_outputs(messages, limit)
+            compacted = forwarded is not messages
+            serialized = json.dumps([{"role": str(m.role), "content": m.content,
+                                      "tool_calls": str(getattr(m, "tool_calls", "")),
+                                      "tool_call_id": getattr(m, "tool_call_id", None)}
+                                     for m in forwarded], ensure_ascii=False)
+            estimated = (len(serialized.encode()) + len(tools.encode())) // 2 + self.max_tokens
+            if estimated <= self.num_ctx:
+                break
         if estimated > self.num_ctx:
-            raise RuntimeError(f"Context estimate {estimated} exceeds num_ctx={self.num_ctx}; no content was cut. Compact active logs with source pointers or use --num-ctx.")
+            raise RuntimeError(f"Required context plus tool-call protocol estimate {estimated} exceeds num_ctx={self.num_ctx} even after output compaction; rules and active task were not cut.")
         self.calls += 1
         with (self.run_dir / "model_calls.jsonl").open("a") as f:
-            f.write(json.dumps({"time": now(), "call": self.calls, "messages_sha256": digest(serialized.encode()), "estimated_tokens": estimated, "num_ctx": self.num_ctx}) + "\n")
+            f.write(json.dumps({"time": now(), "call": self.calls, "messages_sha256": digest(serialized.encode()), "estimated_tokens": estimated, "num_ctx": self.num_ctx, "outputs_compacted": compacted}) + "\n")
         print(f"[{now()}] Modellaufruf {self.calls}", flush=True)
         kwargs["num_ctx"] = self.num_ctx
-        return self.engine.generate(messages, **kwargs)
+        return self.engine.generate(forwarded, **kwargs)
 
 
 def run_cycle(workspace, config_path, start_prompt, num_ctx):
@@ -184,6 +217,14 @@ def run_cycle(workspace, config_path, start_prompt, num_ctx):
         def trace(event):
             # Do not dump prompts, credentials or raw command arguments.
             record = {"time": now(), "event": event.event_type.value}
+            record["tool_name"] = event.data.get("tool_name", event.data.get("tool", ""))
+            if "latency" in event.data:
+                record["duration_seconds"] = event.data["latency"]
+            if "result" in event.data:
+                raw_result = str(event.data["result"])
+                artifact = run_dir / ("tool-result-" + digest(raw_result.encode())[:20] + ".txt")
+                artifact.write_text(raw_result)
+                record["result_path"] = str(artifact)
             for key in ("tool_name", "success", "duration_seconds", "returncode"):
                 if key in event.data:
                     record[key] = event.data[key]

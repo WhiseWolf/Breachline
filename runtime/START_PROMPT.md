@@ -34,3 +34,9 @@ Nutze diesen Marker nicht wegen optionaler Tools oder weil eine Einzelaufgabe fe
 Der Scheduler hat bereits ein manifest.json für diesen Lauf erstellt. Ergänze
 deine Aktionsevidenz im Run-Verzeichnis; ersetze nicht das Scheduler-Manifest.
 Ein Dateihash oder erfolgreicher Modellaufruf beweist allein keinen Produktfortschritt.
+Die Pflichtbriefings sind bereits vollständig enthalten: lies sie nicht gesammelt
+nochmals als Werkzeugausgabe ein. Nutze gezielte Abschnitte, wenn du etwas nachprüfst.
+Lange Werkzeugausgaben werden vollständig als Run-Artefakte gespeichert; der
+Modellkontext kann eine ausdrücklich markierte Kurzansicht mit Dateipfad enthalten.
+Lies fehlende entscheidungsrelevante Abschnitte gezielt nach. Fehlende Abschnitte
+sind keine Grundlage für bestätigte Ergebnisse.

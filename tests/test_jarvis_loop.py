@@ -94,6 +94,30 @@ class ContextTests(unittest.TestCase):
             recorder.generate([SimpleNamespace(role="user", content="X" * 6000)])
         self.assertEqual(recorder.calls, 0)
 
+    def test_long_tool_output_is_archived_without_losing_rules_or_protocol(self):
+        received = []
+        engine = SimpleNamespace(generate=lambda messages, **kwargs: received.append(messages) or {"content": "ok"})
+        recorder = loop.RecordingEngine(engine, self.root, 4000, 256)
+        rules = SimpleNamespace(role="system", content="IMMUTABLE RULES")
+        task = SimpleNamespace(role="user", content="ACTIVE TASK")
+        tool = SimpleNamespace(role="tool", content="START " + "X" * 20000 + " END", tool_call_id="call_42")
+        recorder.generate([rules, task, tool], model="local")
+        result = received[0]
+        self.assertIs(result[0], rules)
+        self.assertIs(result[1], task)
+        self.assertEqual(result[2].tool_call_id, "call_42")
+        self.assertIn("CONTEXT COMPACTED", result[2].content)
+        self.assertEqual(len(tool.content), 20010)
+        artifacts = list(self.root.glob("message-*.txt"))
+        self.assertEqual(artifacts[0].read_text(), tool.content)
+
+    def test_initial_briefing_is_not_compacted_even_if_long(self):
+        recorder = loop.RecordingEngine(SimpleNamespace(), self.root, 32768, 2048)
+        rules = SimpleNamespace(role="system", content="C" * 5000)
+        task = SimpleNamespace(role="user", content="BRIEFING " * 1000)
+        self.assertIs(recorder.compact_outputs([rules, task], 128)[0], rules)
+        self.assertEqual(recorder.compact_outputs([rules, task], 128)[1].content, task.content)
+
 
 class ToolSelectionTests(unittest.TestCase):
     def registry(self, *extra):

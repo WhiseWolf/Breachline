@@ -79,7 +79,12 @@ Registry-Aufrufpfad und prüft seine Werkzeugnamen ausdrücklich.
 Kontextfenster: standardmäßig 32768 Tokens, über `JARVIS_NUM_CTX` oder `--num-ctx`
 einstellbar. Das ist der Scheduler-Kontextumfang, kein neuer max_tokens/max_turns-Wert.
 Vor jedem Modellaufruf erfolgt eine konservative Größenprüfung (kein exakter Tokenizer).
-Zu große Kontexte stoppen mit Hinweis; keine Pflichtregeln werden abgeschnitten.
+Lange Tool-/Assistant-Ausgaben werden vor dem Modellaufruf vollständig als Run-
+Artefakte gespeichert. Der Modellkontext erhält eine markierte Kopf-/Endansicht
+mit Dateipfad. Bei Kontextdruck wird diese Ansicht weiter verkleinert; Tool-Call-IDs
+und die Reihenfolge bleiben erhalten. Die ursprüngliche Agenthistorie bleibt intakt.
+User-/System-Nachrichten mit Pflichtbriefing und aktivem Auftrag werden nicht gekürzt.
+Passt selbst dieser Kontext mit Tool-Call-Protokoll nicht, stoppt der Lauf mit Hinweis.
 Aktive Logs knapp halten, ausführliche Evidenz in Artefakten mit Verweisen speichern.
 Ollama/Modell muss dieses Kontextfenster unterstützen; der lokale Erstlauf ist noch
 nicht abgenommen. Die Größenprüfung beweist nicht, dass der Modellserver intern
