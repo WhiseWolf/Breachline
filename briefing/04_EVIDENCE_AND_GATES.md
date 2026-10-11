@@ -36,3 +36,6 @@ Jeder Gate-Übergang enthält Quellen-/Test-IDs, Gegenargumente, verbleibende Un
 Ist die Evidenz nicht verfügbar, lautet der Status NOT_EVALUATED oder NOT_PASSED, nicht abgeschlossen.
 Ein technischer Spike zur Machbarkeit darf vor Gate A stattfinden, wenn er klein und reversibel ist. Daraus folgt keine Freigabe für einen größeren Produkt-Build.
 Bot-Replays, Views und simulierte Daten sind keine menschliche Retention.
+
+## Prüfung vor jedem Phasenabschluss
+Mengen, Dokumentänderungen und Selbstscores sind keine Gate-Nachweise. Gemäß 03_RESEARCH_PROTOCOL dokumentieren: tragende Beleg-IDs, stärkste alternative Erklärung/Gegenprüfung, verbleibende Unsicherheit, begründete nächste Aktion und Bedingung zur Wiederöffnung. Teilfortschritt präzise benennen; ein abgeschlossener Abruf/Eintrag ist keine abgeschlossene Forschung. Fehlende menschliche Nutzungsdaten nicht durch Konzepttexte oder Botläufe ersetzen.

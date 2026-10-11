@@ -1,4 +1,4 @@
-# Agent Loop — Version 2.1
+# Agent Loop — Version 2.2
 ## 0. Load
 Lies alle Pflichtdateien aus agent_config.json und aktive Logs. Pfade gemäß 00_README_FIRST.
 Schreibe den Startnachweis gemäß 12_EXECUTION_AND_EVIDENCE. Nicht behaupten, Regeln geladen zu haben, wenn das Lesen nicht gelang.
@@ -21,3 +21,10 @@ Prozessänderungen nur gemäß Adaptation Policy; keine erfundenen Baselines.
 ## 9. Continue
 CURRENT_WORK auf einen eindeutigen nächsten Auftrag aktualisieren. Sinnvoll und innerhalb der Freigaben weiterarbeiten.
 Falls Runtime endet: tatsächlichen Endstatus dokumentieren; keine automatische Fortsetzung behaupten, solange sie nicht beobachtet wurde.
+
+## Fortsetzung und fachliche Abnahme
+Bei jedem Zyklus CURRENT_WORK am tatsächlich geladenen aktuellen Briefing prüfen. Selbst gesetzte Zahlenziele bei Bedarf durch inhaltliche Kriterien gemäß 03_RESEARCH_PROTOCOL ersetzen; Änderung begründen, belegte Ergebnisse erhalten. Ein Briefing-Update initialisiert die Mission nicht erneut.
+
+In Audit/Decide prüfen, welche Aussage neu belegt/widerlegt wurde und ob das passende Gate erfüllt ist. CURRENT_WORK knapp halten: geprüfter Stand mit Belegpfaden, wesentliche Unsicherheit, genau eine nächste ausführbare Aktion mit beobachtbarem Erfolg-/Abbruchkriterium. Eine Arbeitsportion oder ein Lauf darf enden, ohne die Forschungsphase abzuschließen.
+
+BLOCKED/NEEDS_USER nur auf eine tatsächlich blockierte Aktion und notwendige Nutzerhilfe beziehen. Forschungsunsicherheit, optionale Werkzeuge oder erreichte Mengen blockieren die Gesamtmission nicht. Wenn keine sinnvolle erlaubte unabhängige Arbeit verbleibt, mit geprüftem Grund warten.

@@ -1,4 +1,4 @@
-# Startabnahme — Version 2.2
+# Startabnahme — Version 2.3
 Dies ist ein kurzer ausführbarer Vertrag, kein zusätzlicher Forschungsauftrag.
 ## Vor dem ersten Werkzeugschritt
 - aktive Offline-Dateien stimmen mit dem beabsichtigten GitHub-Stand überein;
@@ -15,3 +15,6 @@ Zweiter Zyklus übernimmt den aktualisierten CURRENT_WORK ohne erneute Initialis
 Bei nicht erfülltem technischen Kriterium tatsächlichen Fehler erfassen. Nicht die Gesamtmission wegen eines fehlenden optionalen Tools stoppen.
 ## Kein Nachweis durch Dokumentenaudit
 Der GitHub-Audit prüft Dokumente. Lokale Loader-/Scheduler-/Memory-Abnahme wurde noch nicht ausgeführt.
+
+## Abnahme nach Briefing-Updates
+Der nächste Kontextnachweis muss die tatsächlich geladenen neuen Briefing-Dateihashes zeigen; aktive Logs und Mission erhalten. Fachliche Abnahme gemäß 03_RESEARCH_PROTOCOL ist ein eigener Nachweis: Werkzeug-/Dateierfolg oder Konzeptanzahl allein reichen nicht.

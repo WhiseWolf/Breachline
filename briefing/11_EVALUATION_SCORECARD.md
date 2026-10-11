@@ -51,3 +51,6 @@ Jede Bewertung enthält Run-ID, Bewertungszeit aus der Systemuhr, Belege und kur
 Unbekannt ist UNASSESSED, nicht automatisch 5 oder 0. Keinen Durchschnitt aus fehlenden Werten als belastbar darstellen.
 Neue Dokumentation ist nicht automatisch Novel Learning.
 Die Scorecard ist kein Ersatz für nachgewiesene Gate-Übergänge.
+
+## Keine Selbstfreigabe durch Punkte oder Mengen
+Konzept-/Quellenanzahl, Textmenge und Modell-/Dateiaktivität sind kein automatischer Erkenntnisgewinn. Die stärkste konkrete Behauptung an Fundstelle und Gegenargument prüfen; benennen, welche Beobachtung die Entscheidung verändert hat. Hohe Werte ersetzen die fachliche Abnahme aus 03_RESEARCH_PROTOCOL und Evidence-Gates nicht; fehlende Evidenz nicht durch andere gute Dimensionen verrechnen.

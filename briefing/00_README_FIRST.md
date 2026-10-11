@@ -25,3 +25,6 @@ Startkontext gemäß start_context_order in agent_config.json; aktive Logs aussc
 00_CONSTITUTION bleibt höchste Autorität. Einstieg nicht rekursiv laden.
 14_START_ACCEPTANCE.md beschreibt beobachtbare Kriterien für den ersten und zweiten Arbeitszyklus.
 Vor dem Erststart den neuen Stand einmal übernehmen. Nach begonnenen neuen Läufen aktive Logs nicht erneut durch leere GitHub-Startvorlagen ersetzen.
+
+## Aktualisieren im laufenden Betrieb
+Push/Pull aktualisiert den getrennten Offline-Briefing-Ordner nicht automatisch. Nur beabsichtigte geänderte Briefings übernehmen; lokale Änderungen zuerst vergleichen. Aktive Logs/Artefakte/Mission erhalten. Der laufende Zyklus behält seinen geladenen Stand; der Python-Loop lädt Änderungen beim nächsten Zyklus. Übernahme anhand der Dateihashes im nächsten manifest.json prüfen. Dateiänderung allein beweist keinen aktualisierten Modellkontext.
