@@ -44,6 +44,14 @@ def potential_write(name, data):
     return True
 
 
+def failed_before_execution(name, result):
+    # Verified OpenJarvis path: docker.from_env() negotiates the API version
+    # before containers.run(). Do not generalize to execution/time-out errors.
+    return (name == "code_interpreter_docker"
+            and str(result).startswith("Docker execution error (DockerException): Error while fetching server API version:")
+            and "FileNotFoundError(2," in str(result))
+
+
 def transient_error(exc):
     """Only transport errors and specific temporary HTTP statuses, including causes."""
     seen = set()
@@ -90,6 +98,8 @@ class ActionLedger:
                             if a["tool"] == name and a["status"] == "PENDING"), None)
             if pending is not None:
                 pending.update(end=now(), status="SUCCEEDED" if data.get("success") is True else "FAILED")
+                if data.get("success") is False and failed_before_execution(name, data.get("result", "")):
+                    pending.update(status="NOT_EXECUTED", reason="Docker API connection failed before container execution")
         save_json(self.path, self.actions)
 
     def check(self):
@@ -112,10 +122,34 @@ def check_previous_run(logs):
         if any(a["potential_write"] and a["status"] in {"PENDING", "FAILED"} for a in actions):
             raise UnsafeRecoveryError(f"Previous run has uncertain side effects: {receipts}. Verify actual state before restarting; do not delete receipts to bypass this check.")
     if manifest["status"] in {"RUNNING", "STARTING", "FAILED", "INTERRUPTED"}:
-        # Older versions did not record receipts. Do not infer safety from silence.
+        # Reconstruct older receipts from paired events and existing result files.
         if not receipts.exists() and latest.with_name("events.jsonl").exists():
             events = [json.loads(line) for line in latest.with_name("events.jsonl").read_text().splitlines() if line.strip()]
-            if any(e.get("tool_name", "") not in READ_ONLY_TOOLS for e in events):
+            actions = []
+            for event in events:
+                name = event.get("tool_name", "")
+                if event.get("event", "").endswith("start"):
+                    actions.append({"tool": name, "status": "PENDING", "potential_write": name not in READ_ONLY_TOOLS})
+                elif event.get("event", "").endswith("end"):
+                    action = next((a for a in reversed(actions)
+                                   if a["tool"] == name and a["status"] == "PENDING"), None)
+                    if action is None:
+                        raise UnsafeRecoveryError(f"Unpaired legacy tool result: {latest}")
+                    path = Path(event.get("result_path", "")).resolve()
+                    content = ""
+                    result_exists = path.is_relative_to(latest.parent.resolve()) and path.is_file()
+                    if result_exists:
+                        content = path.read_text()
+                    if event.get("success") is True and (result_exists or not action["potential_write"]):
+                        action["status"] = "SUCCEEDED"
+                    elif event.get("success") is False and failed_before_execution(name, content):
+                        action.update(status="NOT_EXECUTED", reason="Docker API connection failed before execution")
+                    else:
+                        action["status"] = "FAILED"
+            save_json(latest.with_name("legacy_action_review.json"), {
+                "review_time": now(), "basis": "paired legacy events and saved results; no actions replayed",
+                "actions": actions})
+            if any(a["potential_write"] and a["status"] in {"PENDING", "FAILED"} for a in actions):
                 raise UnsafeRecoveryError(f"Previous run needs action-state review: {latest}")
 
 
@@ -479,7 +513,10 @@ def main():
         def stop(signum, frame):
             raise KeyboardInterrupt
         signal.signal(signal.SIGTERM, stop)
-        check_previous_run(logs)
+        try:
+            check_previous_run(logs)
+        except UnsafeRecoveryError as exc:
+            raise SystemExit(f"Scheduler paused: {exc}") from None
         prompt_path = Path(__file__).with_name("START_PROMPT.md")
         stalls = 0
         policy = RecoveryPolicy(args.num_ctx, args.max_num_ctx, args.inference_retries)

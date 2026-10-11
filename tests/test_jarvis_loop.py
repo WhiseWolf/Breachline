@@ -269,6 +269,43 @@ class RecoveryTests(unittest.TestCase):
         self.assertIn(str(run_dir), notice)
         self.assertEqual(loop.previous_run_notice(self.root, "other"), "")
 
+    def legacy_run(self, docker_result, shell_result=True, shell_end=True):
+        run = self.root / "runs/20261011-legacy"
+        run.mkdir(parents=True)
+        loop.save_json(run / "manifest.json", {"status": "INTERRUPTED"})
+        (run / "docker.txt").write_text(docker_result)
+        (run / "shell.txt").write_text("Exit code: 0\nstdout: 2026-10-11T07:34:36+00:00")
+        events = [
+            {"event": "tool_call_start", "tool_name": "code_interpreter_docker"},
+            {"event": "tool_call_end", "tool_name": "code_interpreter_docker", "success": False, "result_path": str(run / "docker.txt")},
+            {"event": "tool_call_start", "tool_name": "shell_exec"}]
+        if shell_end:
+            events.append({"event": "tool_call_end", "tool_name": "shell_exec", "success": shell_result, "result_path": str(run / "shell.txt")})
+        (run / "events.jsonl").write_text("\n".join(json.dumps(e) for e in events))
+        return run
+
+    def test_legacy_completed_shell_and_proven_preexecution_docker_failure_resume(self):
+        error = "Docker execution error (DockerException): Error while fetching server API version: ('Connection aborted.', FileNotFoundError(2, 'No such file or directory'))"
+        run = self.legacy_run(error)
+        loop.check_previous_run(self.root)
+        review = json.loads((run / "legacy_action_review.json").read_text())
+        self.assertEqual([a["status"] for a in review["actions"]], ["NOT_EXECUTED", "SUCCEEDED"])
+        self.assertEqual(json.loads((run / "manifest.json").read_text())["status"], "INTERRUPTED")
+
+    def test_legacy_pending_shell_and_ambiguous_docker_failure_still_block(self):
+        self.legacy_run("Execution timed out after 30 seconds.", shell_end=False)
+        with self.assertRaises(loop.UnsafeRecoveryError):
+            loop.check_previous_run(self.root)
+
+    def test_live_preexecution_docker_failure_allows_free_alternative(self):
+        ledger = loop.ActionLedger(self.root)
+        ledger.record("tool_call_start", {"tool": "code_interpreter_docker"})
+        ledger.record("tool_call_end", {"tool": "code_interpreter_docker", "success": False,
+                                      "result": "Docker execution error (DockerException): Error while fetching server API version: FileNotFoundError(2, 'No such file or directory')"})
+        ledger.check()
+        self.assertEqual(ledger.actions[-1]["status"], "NOT_EXECUTED")
+        self.assertFalse(loop.failed_before_execution("shell_exec", "FileNotFoundError(2, 'No such file or directory')"))
+
 
 class CycleIntegrationTests(unittest.TestCase):
     setUp = ContextTests.setUp

@@ -144,10 +144,23 @@ keine alten Missionsarchive als neuer Auftrag eingebracht.
 Uploads dieser Artefakte. Fehlerbehandlung ist begrenzt und ersetzt weder die
 Briefing-Regeln noch eine lokale Runtime-Abnahme.
 
+Ältere unterbrochene Läufe ohne action_receipts werden anhand gepaarter Start-/End-
+Ereignisse und gespeicherter Resultate geprüft. Die Prüfung erzeugt ausschließlich
+legacy_action_review.json; ursprüngliche Manifeste/Ergebnisse bleiben erhalten.
+Bestätigte Rückgaben dürfen fortgesetzt werden, fehlende Rückgaben bleiben gesperrt.
+Eine eng begrenzte Ausnahme erkennt beim code_interpreter_docker den DockerException-
+Fehler "Error while fetching server API version" mit FileNotFoundError(2): dieser
+entsteht beim Docker-Verbindungsaufbau vor containers.run, Status NOT_EXECUTED.
+Jarvis darf danach eine kostenlose erlaubte Alternative nutzen. Docker-Timeouts,
+Container-Ausführungsfehler und unbekannte Fehlermeldungen sind keine solche Ausnahme.
+Das ist eine Prüfung des Ausführungsstatus, keine Bestätigung korrekter Inhalte und
+keine automatische Wiederholung erfolgreicher Shell-Aktionen.
+
 Offizielle Grundlagen:
 - https://github.com/open-jarvis/OpenJarvis/blob/main/src/openjarvis/cli/ask.py
 - https://github.com/open-jarvis/OpenJarvis/blob/main/src/openjarvis/core/config.py
 - https://github.com/open-jarvis/OpenJarvis/blob/main/src/openjarvis/engine/ollama.py
+- https://github.com/open-jarvis/OpenJarvis/blob/main/src/openjarvis/tools/code_interpreter_docker.py
 
 ## Tests
 
