@@ -141,7 +141,7 @@
       "new_accounts_allowed": false,
       "direct_messages_allowed": false,
       "per_post_renewed_approval_required": false,
-      "account_state": "Instagram @breachlineagent exists and is blank per user 2026-10-11 12:00 Europe/Vienna; runtime authentication and write access unverified. YouTube and TikTok accounts remain unconfirmed. Account creation is not authorized."
+      "account_state": "Instagram @breachlineagent account access and User-ID 17841416428554896 verified by user's Ubuntu screenshot 2026-10-11; publishing unverified. YouTube/TikTok accounts unconfirmed."
     }
   },
   "social_accounts": {
@@ -150,8 +150,12 @@
       "url": "https://www.instagram.com/breachlineagent/",
       "project_assignment": "user_confirmed",
       "existence": "user_reported",
-      "profile_state": "blank_user_reported",
-      "runtime_access": "UNVERIFIED"
+      "profile_state": "CURRENT_CONTENT_UNVERIFIED; prior blank report is historical",
+      "runtime_access": "USER_SCREENSHOT_VERIFIED_2026_10_11; recheck with runtime/instagram_agent.py doctor",
+      "instagram_user_id": "17841416428554896",
+      "api_route": "Instagram API with Instagram Login; graph.instagram.com",
+      "publishing_access": "UNVERIFIED; successful identity read does not prove write permission",
+      "adapter": "runtime/instagram_agent.py via existing shell_exec; guidance runtime/INSTAGRAM_AGENT.md"
     },
     "youtube": {
       "existence": "not_confirmed"
@@ -161,4 +165,3 @@
     }
   }
 }
-

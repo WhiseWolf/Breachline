@@ -72,3 +72,20 @@ Aktuelle Nutzerklarstellung: „Das Profil ‚breachlineagent‘ auf Instagram i
 Die organische Spieltest-Freigabe gilt für @breachlineagent im oben dokumentierten Umfang, sobald der tatsächliche Zugriff geprüft ist; keine erneute Freigabe für passende Spieltest-Beiträge verlangen. Keine Anmeldung oder erfolgreiche Veröffentlichung allein aus dieser Statusmeldung ableiten.
 Jarvis kann Profiltexte, eigene Gameplay-Assets und Testaufrufe vorbereiten. Bei Instagram nur konkret fehlenden Zugriff oder notwendige Authentifizierung als Blocker melden, nicht erneut Kontoerstellung verlangen. Für YouTube/TikTok ist Einrichtung durch den Nutzer oder eine gesonderte ausdrückliche Kontoerstellungsfreigabe erforderlich, falls der jeweilige Kanal sinnvoll benötigt wird. Keine Pflicht, alle Plattformen einzurichten. Authentifizierung nicht umgehen. Spielentwicklung, lokale Tests und freigegebenes Pages-Testhosting bleiben unabhängig fortsetzbar.
 
+
+## Instagram-API-Anbindung — beobachteter Stand 2026-10-11
+Quelle: Nutzer-Screenshot dieser Projektsitzung, nach erfolgreichem verschluesseltem
+Token-Import auf Ubuntu. Die echte Kontoabfrage lieferte @breachlineagent und
+Instagram User-ID 17841416428554896 mit bestaetigtem Kontozugriff.
+Dies ersetzt UNVERIFIED fuer diesen beobachteten Lesezugriff, nicht fuer
+Schreibrechte, aktuellen Profilinhalt, Token-Laufzeit oder kuenftige Verfuegbarkeit.
+Die fruehere Meldung eines leeren Profils ist historisch; aktuellen Inhalt pruefen.
+API-Weg: Instagram API with Instagram Login, graph.instagram.com.
+Technische Anbindung: runtime/instagram_agent.py ueber vorhandenes shell_exec,
+Anleitung runtime/INSTAGRAM_AGENT.md. Privaten Token intern aus
+~/.config/breachline-agent/instagram.json lesen; niemals in Modellkontext,
+Repository, Pages oder Logs kopieren. Keine Facebook-Spiegelung ableiten.
+Der Nutzer beauftragt in dieser Sitzung die Python-Anbindung direkt auf GitHub
+nach Verifikation des Weges. Bestehende organische Spieltest-Freigabe gilt
+unveraendert; keine zusaetzliche Freigabe pro passendem Beitrag erforderlich.
+Ein erfolgreicher doctor-Test beweist keine erfolgreiche Veroeffentlichung.

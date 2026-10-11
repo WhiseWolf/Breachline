@@ -66,3 +66,14 @@ mit überprüfbarem Test und Rückweg; keine unkontrollierte Reparaturschleife.
 Ausführliche Evidenz als Artefakte speichern, aktive Logs knapp halten; keine
 historischen Ergebnisse löschen oder ohne Beleg durch Zusammenfassungen ersetzen.
 
+
+Instagram-Anbindung: Fuer @breachlineagent ist ein erfolgreicher Ubuntu-Kontozugriff
+durch Nutzer-Screenshot belegt; Schreibrechte bleiben ungeprueft. Nutze bei Bedarf
+ueber vorhandenes shell_exec: python3 repo/runtime/instagram_agent.py doctor.
+Lies runtime/INSTAGRAM_AGENT.md gezielt vor der ersten Nutzung. Token-Dateien
+niemals in den Modellkontext lesen; der Adapter liest sie intern. Er kann eigene
+Beitraege/Kommentare lesen, erlaubte Bild-/Reel-Testaufrufe mit Belegen publizieren
+und geeignete langgueltige Tokens erneuern. Freigaben aus 13_AUTHORIZATIONS.md
+gelten unveraendert. Unklare Schreibwirkungen zuerst extern pruefen; keine
+Doppelposts oder Loeschung von Belegen zur Umgehung. Fehlende optionale Social-
+Funktionen blockieren unabhaengige erlaubte Arbeit nicht.
