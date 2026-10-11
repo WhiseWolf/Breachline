@@ -17,6 +17,26 @@ from datetime import datetime
 from uuid import uuid4
 
 
+class StopRequest:
+    """First signal drains the current operation; second interrupts immediately."""
+    def __init__(self):
+        self.requested = False
+
+    def signal(self, signum, frame):
+        if self.requested:
+            raise KeyboardInterrupt
+        self.requested = True
+        print("\nStop requested: finishing current operation and saving handoff. "
+              "Press Ctrl+C again for immediate interruption.", flush=True)
+
+    def check(self):
+        if self.requested:
+            raise KeyboardInterrupt
+
+
+STOP = StopRequest()
+
+
 class ContextBudgetError(RuntimeError):
     pass
 
@@ -328,6 +348,38 @@ class RecordingEngine:
         self.recovery_event("CHECKPOINT_SAVED", path=str(artifact), reason=reason)
         return handoff
 
+    def save_interruption(self):
+        """Save evidence even when an interrupted tool has uncertain effects."""
+        artifact = self.run_dir / "interruption.json"
+        actions = self.ledger.actions if self.ledger else []
+        uncertain = [a for a in actions if a["potential_write"]
+                     and a["status"] in {"PENDING", "FAILED"}]
+        messages = self.last_messages or []
+        save_json(artifact, {
+            "time": now(), "reason": "scheduler stop",
+            "messages": self.history_data(messages), "actions": actions,
+            "uncertain_actions": uncertain,
+            "note": "Conversation claims are unverified. No action was replayed."})
+        excerpts = [str(m.content or "")[-1600:] for m in messages
+                    if self.role(m) == "assistant" and m.content][-3:]
+        handoff = (f"# Interrupted run handoff\n\nSaved: {now()}\n"
+                   f"Evidence: {artifact}\n"
+                   "Read the saved conversation, tool results and receipts; verify actual "
+                   "files before resuming or repeating actions. Extract supported learnings "
+                   "into the active learning log on the next run.\n\n"
+                   f"Uncertain actions: {json.dumps(uncertain, default=str)}\n\n"
+                   "## Recent agent statements (unverified)\n" + "\n\n".join(excerpts))
+        target = self.run_dir / "INTERRUPTION_HANDOFF.md"
+        target.write_text(handoff + "\n")
+        current = self.run_dir.parent.parent / "CURRENT_WORK.md"
+        if current.is_file():
+            marker = "\n<!-- SCHEDULER_CHECKPOINT -->\n"
+            base = current.read_text().split(marker, 1)[0]
+            temp = current.with_name(current.name + ".interrupt.tmp")
+            temp.write_text(base + marker + handoff + "\n")
+            temp.replace(current)
+        print(f"[{now()}] Stop handoff saved: {target}", flush=True)
+
     def roll_history(self, messages, reason):
         """Discard only settled assistant/tool history, preserving all instructions."""
         history = messages[self.anchor_count:]
@@ -394,6 +446,8 @@ class RecordingEngine:
         return forwarded if changed else messages
 
     def generate(self, messages, **kwargs):
+        self.last_messages = messages
+        STOP.check()
         if self.ledger is not None:
             self.ledger.check()
         self.num_ctx = self.policy.num_ctx
@@ -451,6 +505,10 @@ class RecordingEngine:
                     f.write(json.dumps({"time": now(), "call": self.calls, "attempt": attempt + 1,
                                         "status": "RETURNED", "usage": response.get("usage", {}),
                                         "num_ctx": self.num_ctx}) + "\n")
+                # Preserve the returned response before the agent can execute its
+                # proposed tools. A requested stop must not start another action.
+                save_json(self.run_dir / "last_model_response.json", response)
+                STOP.check()
                 return response
             except Exception as exc:
                 # Inference has no tool side effects. Keep the same history and
@@ -461,7 +519,9 @@ class RecordingEngine:
                 delay = (10, 30, 60)[min(attempt, 2)]
                 self.recovery_event("INFERENCE_RETRY", attempt=attempt + 1, delay_seconds=delay,
                                     error_type=type(exc).__name__)
+                STOP.check()
                 self.policy.sleep(delay)
+                STOP.check()
 
 
 def run_cycle(workspace, config_path, start_prompt, num_ctx, policy=None):
@@ -602,6 +662,13 @@ def run_cycle(workspace, config_path, start_prompt, num_ctx, policy=None):
                         note="Context exhausted after a changed checkpoint and settled tool receipts. Not a completed phase or evidence gate; reload files and verify outcomes before continuing.")
         return "CONTEXT_HANDOFF"
     except BaseException as exc:
+        if isinstance(exc, (KeyboardInterrupt, SystemExit)) and recorder is not None:
+            try:
+                recorder.save_interruption()
+                manifest["interruption_snapshot"] = str(run_dir / "interruption.json")
+            except Exception as save_error:
+                manifest["interruption_save_error"] = str(save_error)
+                print(f"[{now()}] Stop snapshot failed: {save_error}", flush=True)
         manifest.update({"status": "INTERRUPTED" if isinstance(exc, (KeyboardInterrupt, SystemExit)) else "FAILED", "error": str(exc)})
         raise
     finally:
@@ -638,9 +705,8 @@ def main():
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             raise SystemExit("The new scheduler is already running")
-        def stop(signum, frame):
-            raise KeyboardInterrupt
-        signal.signal(signal.SIGTERM, stop)
+        signal.signal(signal.SIGINT, STOP.signal)
+        signal.signal(signal.SIGTERM, STOP.signal)
         try:
             check_previous_run(logs)
         except UnsafeRecoveryError as exc:
@@ -649,6 +715,9 @@ def main():
         stalls = 0
         policy = RecoveryPolicy(args.num_ctx, args.max_num_ctx, args.inference_retries)
         while True:
+            if STOP.requested:
+                print("Scheduler stopped.", flush=True)
+                return
             policy.retries_used = 0
             try:
                 status = run_cycle(workspace, args.config.expanduser().resolve(), prompt_path, policy.num_ctx, policy)
@@ -666,7 +735,10 @@ def main():
             if args.once:
                 return
             try:
-                time.sleep(min(300, args.interval * max(1, min(stalls, 5))))
+                delay = min(300, args.interval * max(1, min(stalls, 5)))
+                for _ in range(delay):
+                    STOP.check()
+                    time.sleep(1)
             except KeyboardInterrupt:
                 print("Scheduler stopped.", flush=True)
                 return
