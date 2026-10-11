@@ -311,7 +311,29 @@ class CycleIntegrationTests(unittest.TestCase):
     setUp = ContextTests.setUp
     write_contract = ContextTests.write_contract
 
+    def test_main_pauses_after_three_consecutive_context_handoffs(self):
+        with patch.object(sys, "argv", ["jarvis_loop", "--workspace", str(self.root)]), \
+             patch.object(loop, "check_previous_run"), \
+             patch.object(loop, "run_cycle", return_value="CONTEXT_HANDOFF") as cycle, \
+             patch.object(loop.time, "sleep") as sleep, \
+             patch.object(loop.os, "chdir"), patch.object(loop.signal, "signal"):
+            loop.main()
+        self.assertEqual(cycle.call_count, 3)
+        self.assertEqual(sleep.call_count, 2)
+
     def test_two_cycles_reload_handoff_and_retry_model_without_replaying_actions(self):
+        self.exercise_cycles()
+
+    def test_context_overflow_reloads_checkpoint_without_replaying_write(self):
+        self.exercise_cycles(overflow=True)
+
+    def test_context_overflow_without_checkpoint_stops(self):
+        self.exercise_cycles(overflow=True, checkpoint=False)
+
+    def test_context_overflow_with_uncertain_write_stops(self):
+        self.exercise_cycles(overflow=True, uncertain=True)
+
+    def exercise_cycles(self, overflow=False, checkpoint=True, uncertain=False):
         config = self.root / "config.toml"
         config.write_text("existing configuration")
         cfg = SimpleNamespace(agent=SimpleNamespace(max_turns=60),
@@ -341,9 +363,15 @@ class CycleIntegrationTests(unittest.TestCase):
             bus.emit("tool_call_end", tool="web_search", success=True, result="mock source")
             bus.emit("tool_call_start", tool="file_write")
             handoff = "CONTINUE " + str(len(observed))
-            (self.root / "logs/CURRENT_WORK.md").write_text(handoff)
+            if checkpoint:
+                (self.root / "logs/CURRENT_WORK.md").write_text(handoff)
             writes.append(handoff)
             bus.emit("tool_call_end", tool="file_write", success=True, result="saved")
+            if overflow and len(observed) == 1:
+                if uncertain:
+                    bus.emit("tool_call_start", tool="shell_exec")
+                # Protected user context cannot be compacted to fit the ceiling.
+                messages.append(SimpleNamespace(role="user", content="x" * 110000))
             kwargs["engine"].generate(messages)
             return SimpleNamespace(content="done", turns=2, metadata={}, tool_results=[
                 SimpleNamespace(tool_name="web_search", success=True, content="mock source"),
@@ -360,13 +388,22 @@ class CycleIntegrationTests(unittest.TestCase):
         policy = loop.RecoveryPolicy(32768, sleep=Mock())
         with patch.dict(sys.modules, modules), patch.object(loop, "prepare_runtime", return_value=(
                 cfg, "operative", "local", ["file_read", "file_write", "web_search"], [])):
+            if overflow and (not checkpoint or uncertain):
+                with self.assertRaises(loop.UnsafeRecoveryError if uncertain else loop.ContextBudgetError):
+                    loop.run_cycle(self.root, config, self.prompt, policy.num_ctx, policy)
+                manifest = json.loads(next((self.root / "logs/runs").glob("*/manifest.json")).read_text())
+                self.assertEqual(manifest["status"], "FAILED")
+                return
             first = loop.run_cycle(self.root, config, self.prompt, policy.num_ctx, policy)
             second = loop.run_cycle(self.root, config, self.prompt, policy.num_ctx, policy)
-        self.assertEqual((first, second), ("CYCLE_RETURNED", "CYCLE_RETURNED"))
+        self.assertEqual((first, second), ("CONTEXT_HANDOFF" if overflow else "CYCLE_RETURNED", "CYCLE_RETURNED"))
+        if overflow:
+            self.assertIn("CONTEXT_HANDOFF", observed[1])
+            self.assertEqual(len(list((self.root / "logs/runs").glob("*/context_overflow.json"))), 1)
         self.assertEqual(writes, ["CONTINUE 1", "CONTINUE 2"])
         self.assertIn("CONTINUE 1", observed[1])
         self.assertNotIn("NOT_STARTED\n===== END FILE", observed[1])
-        self.assertEqual(engine.generate.call_count, 5)
+        self.assertEqual(engine.generate.call_count, 4 if overflow else 5)
         self.assertEqual(config.read_text(), "existing configuration")
 
 

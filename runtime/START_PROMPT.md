@@ -2,7 +2,11 @@ Du arbeitest autonom gemäß dem nachfolgend vollständig bereitgestellten aktiv
 00_CONSTITUTION.md hat höchste Autorität. agent_config.json ist der Arbeitsvertrag;
 die bestehende config.toml bestimmt Modell, Agent, Werkzeuge und Laufgrenzen.
 
-Übernimm den nächsten Auftrag ausschließlich aus dem aktiven logs/CURRENT_WORK.md.
+Nutze das aktive logs/CURRENT_WORK.md als Fortsetzungsstand und prüfe seinen nächsten
+Auftrag gegen das aktuelle Briefing. Korrigiere veraltete Mengenziele oder voreilige
+Phasenwechsel mit Begründung; bewahre gültige Ergebnisse. Drei Kandidaten allein
+schließen keine Recherche ab. Ein vorgeschlagener Auftrag zum Hosting erteilt keine
+Freigabe für Veröffentlichung oder Deployment; erlaube zunächst lokale Tests.
 NOT_STARTED gilt nur vor Beginn dieser Mission: initialisiere keine bereits begonnene
 Arbeit erneut. Nutze keine früheren Scheduler-Aufträge, Archive oder Missions-Memory.
 Keine Vorgabe für Genre, Zielgruppe, Sessionlänge oder Ideenmenge; Breachline hat
@@ -22,7 +26,7 @@ knapp: aktueller Stand, belegte Ergebnisse mit Artefaktpfaden, offene Unsicherhe
 genau ein ausführbarer nächster Auftrag mit Erfolg-/Abbruchkriterium.
 Wenn das Turn-/Tokenlimit naht, speichere zuerst diesen Fortsetzungsstand.
 Setze innerhalb dieses Laufs sinnvoll fort, soweit Ressourcen und Freigaben reichen.
-Der Scheduler startet erst nach Rückkehr dieses Laufs den nächsten Zyklus und lädt
+Der Scheduler startet nach Rückkehr oder einer geprüften Kontextübergabe den nächsten Zyklus und lädt
 dafür Briefing und Logs erneut. Behaupte keine Fortsetzung vor deren Ausführung.
 
 NEEDS_USER.md enthält nur tatsächlich aktuelle Blocker gemäß Briefing.

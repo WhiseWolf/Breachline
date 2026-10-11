@@ -90,7 +90,8 @@ für weitere Zyklen dieses Prozesses erhalten; max_tokens/max_turns bleiben unve
 Mit `--max-num-ctx 32768` lässt sich Wachstum deaktivieren. Es gibt keine unbegrenzte
 Erhöhung, Modellwechsel oder automatische RAM-/GPU-Konfiguration. Ein größeres
 Fenster kann auf dieser Hardware deutlich mehr Speicher und Zeit benötigen.
-Passt der geschützte Kontext auch an der Obergrenze nicht, stoppt der Loop.
+Passt der geschützte Kontext auch an der Obergrenze nicht, greift die unten
+beschriebene geprüfte Kontextübergabe; ohne sicheren Checkpoint stoppt der Loop.
 Aktive Logs knapp halten, ausführliche Evidenz in Artefakten mit Verweisen speichern.
 Ollama/Modell muss dieses Kontextfenster unterstützen; der lokale Erstlauf ist noch
 nicht abgenommen. Die Größenprüfung beweist nicht, dass der Modellserver intern
@@ -167,3 +168,21 @@ Offizielle Grundlagen:
 ```bash
 python3 -m unittest discover -s tests -p 'test_jarvis_loop.py'
 ```
+
+## Übergabe bei ausgeschöpftem Kontext
+
+Wenn auch die begrenzte Vergrößerung und Archivierung langer Werkzeugausgaben
+nicht ausreichen, wird die blockierte Anfrage in `context_overflow.json` gesichert.
+Nur bei geändertem CURRENT_WORK, einem erfolgreichen Schreibwerkzeug und vollständig
+geklärten Aktionsbelegen endet der Zyklus als `CONTEXT_HANDOFF`. Nach dem normalen
+Intervall lädt ein frischer Agent die aktuellen Briefings und aktiven Logs sowie den
+Verweis auf die vorige Ausführung. Werkzeuge werden dabei nicht erneut abgespielt.
+Der Status bestätigt weder die Qualität des Checkpoints noch eine abgeschlossene
+Recherchephase. Jarvis muss Belege und vorgeschlagene nächste Schritte erneut gegen
+Briefing und Freigaben prüfen; ein Auftrag zum Hosting ist keine Deployment-Freigabe.
+
+Nach drei aufeinanderfolgenden Kontextübergaben pausiert der Prozess. Ohne geänderten
+Checkpoint oder bei ungeklärten Schreibaktionen stoppt er sofort. Passt bereits der
+vollständige Startkontext nicht in die Obergrenze, ist eine geprüfte Verdichtung der
+aktiven Logs nötig; Regeln werden nicht abgeschnitten. `--once` führt auch bei einer
+Kontextübergabe keinen weiteren Zyklus aus. Kein Reset bestehender Logs.

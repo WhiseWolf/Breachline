@@ -339,6 +339,11 @@ class RecordingEngine:
                 self.recovery_event("CONTEXT_GROW", previous=previous, num_ctx=self.num_ctx,
                                     estimate=estimated, estimate_method="utf8_bytes_div_2_plus_answer")
             else:
+                # Preserve the blocked request for review; never send a truncated
+                # protocol or replay completed tools to make it fit.
+                save_json(self.run_dir / "context_overflow.json", {
+                    "estimated_tokens": estimated, "maximum_num_ctx": self.policy.max_num_ctx,
+                    "messages": json.loads(serialized)})
                 raise ContextBudgetError(f"Required context plus tool-call protocol estimate {estimated} exceeds maximum num_ctx={self.policy.max_num_ctx}; rules and active task were not cut.")
         self.calls += 1
         with (self.run_dir / "model_calls.jsonl").open("a") as f:
@@ -379,6 +384,7 @@ def run_cycle(workspace, config_path, start_prompt, num_ctx, policy=None):
     ledger = ActionLedger(run_dir)
     save_json(ledger.path, [])
     recorder = None
+    before = None
     try:
         body, files, contract = load_context(workspace, start_prompt)
         cfg, agent, model, tools, excluded = prepare_runtime(config_path)
@@ -473,6 +479,21 @@ def run_cycle(workspace, config_path, start_prompt, num_ctx, policy=None):
                          "model_calls": recorder.calls, "agent_metadata": result.metadata,
                          "note": "Tool success and file change are operational signals, not verified research or player value."})
         return status
+    except ContextBudgetError as exc:
+        try:
+            ledger.check()
+            current = digest((workspace / "logs/CURRENT_WORK.md").read_bytes())
+            checkpoint_written = any(a["tool"] in {"file_write", "apply_patch", "shell_exec"}
+                                     and a["status"] == "SUCCEEDED" for a in ledger.actions)
+            if before is None or current == before or not checkpoint_written:
+                raise ContextBudgetError("Context overflow without a changed, successfully written CURRENT_WORK checkpoint; manual review required.") from exc
+        except Exception as review_error:
+            manifest.update(status="FAILED", error=str(review_error), context_error=str(exc))
+            raise
+        manifest.update(status="CONTEXT_HANDOFF", error=str(exc), current_work_changed=True,
+                        current_work_sha256=current, previous_current_work_sha256=before,
+                        note="Context exhausted after a changed checkpoint and settled tool receipts. Not a completed phase or evidence gate; reload files and verify outcomes before continuing.")
+        return "CONTEXT_HANDOFF"
     except BaseException as exc:
         manifest.update({"status": "INTERRUPTED" if isinstance(exc, (KeyboardInterrupt, SystemExit)) else "FAILED", "error": str(exc)})
         raise
@@ -519,6 +540,7 @@ def main():
             raise SystemExit(f"Scheduler paused: {exc}") from None
         prompt_path = Path(__file__).with_name("START_PROMPT.md")
         stalls = 0
+        handoffs = 0
         policy = RecoveryPolicy(args.num_ctx, args.max_num_ctx, args.inference_retries)
         while True:
             policy.retries_used = 0
@@ -532,7 +554,8 @@ def main():
                 raise SystemExit(1) from exc
             print(f"[{now()}] {status}", flush=True)
             stalls = stalls + 1 if status == "NO_PROGRESS" else 0
-            if status == "WAITING" or stalls >= 3:
+            handoffs = handoffs + 1 if status == "CONTEXT_HANDOFF" else 0
+            if status == "WAITING" or stalls >= 3 or handoffs >= 3:
                 print("Scheduler paused: see latest logs/runs manifest and CURRENT_WORK.", flush=True)
                 return
             if args.once:
