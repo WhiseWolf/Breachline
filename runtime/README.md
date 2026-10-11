@@ -209,3 +209,23 @@ vollständige Startkontext nicht in die Obergrenze, ist eine geprüfte Verdichtu
 aktiven Logs nötig; Regeln werden nicht abgeschnitten. `--once` führt auch bei einer
 Kontextübergabe keinen weiteren Zyklus aus. Kein Reset bestehender Logs.
 
+
+## Instagram-Token lokal einrichten
+
+Nach der Token-Erstellung in Meta for Developers auf Ubuntu starten:
+
+```bash
+python3 /home/pagi/breachline-agent/repo/runtime/instagram_setup.py
+```
+
+Das Skript benoetigt nur Python 3, fragt den Token unsichtbar im interaktiven
+Terminal ab und speichert ihn atomar unter
+`~/.config/breachline-agent/instagram.json` (Ordner 0700, Datei 0600).
+Es ist fuer das Konto `breachlineagent` mit der in Meta angezeigten ID
+`17841416428554896` vorbereitet. Ein vorhandener Token wird nur nach Rueckfrage
+ersetzt. Kein Token in Kommandoargumente, GitHub, Briefings oder Logs kopieren.
+
+Das Skript speichert nur: Es sendet keine Netzwerkanfrage, prueft weder Gueltigkeit
+noch Berechtigungen und schaltet keine Jarvis-Integration frei. API-Test, sichere
+Token-Erneuerung und Runtime-Anbindung sind separate Schritte. Die Speicherung ist
+lokal mit Dateirechten geschuetzt, nicht verschluesselt.

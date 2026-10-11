@@ -28,3 +28,7 @@ node_modules/
 Thumbs.db
 .vscode/
 .idea/
+
+# Never commit local Instagram tokens
+instagram.json
+.instagram-*.tmp
