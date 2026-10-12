@@ -86,6 +86,30 @@ class ProgressGuardTests(unittest.TestCase):
         with self.assertRaises(loop.ContextBudgetError):
             recorder.generate([NS(role='user', content='X' * 120000)])
 
+    def test_next_cycle_uses_measured_static_rules_and_counts_new_state(self):
+        run=self.run_dir()
+        policy=loop.RecoveryPolicy(49152,49152)
+        engine=NS(generate=Mock(return_value={'content':'ok','usage':{'prompt_tokens':21000}}))
+        first=loop.RecordingEngine(engine,run,49152,2048,policy,static_context_key='same-rules',static_context_bytes=85000)
+        first.generate([NS(role='user',content='R'*85000)])
+        second=loop.RecordingEngine(engine,run,49152,2048,policy,static_context_key='same-rules',static_context_bytes=85000)
+        second.generate([NS(role='user',content='R'*85000+'NEW STATE '*2000)])
+        changed=loop.RecordingEngine(engine,run,49152,2048,policy,static_context_key='changed-rules',static_context_bytes=85000)
+        with self.assertRaises(loop.ContextBudgetError):
+            changed.generate([NS(role='user',content='R'*85000+'NEW STATE '*2000)])
+        changed_schema=loop.RecordingEngine(engine,run,49152,2048,policy,static_context_key='same-rules',static_context_bytes=85000)
+        with self.assertRaises(loop.ContextBudgetError):
+            changed_schema.generate([NS(role='user',content='R'*85000+'NEW STATE '*2000)],tools=[{'name':'different_tool'}])
+
+    def test_saved_context_profile_requires_valid_bounded_fields(self):
+        run=self.run_dir()
+        profile={'static_key':'rules','tools_sha256':'schema','prompt_upper_bound':26000}
+        loop.save_json(run/'manifest.json',{'context_profile':profile})
+        self.assertEqual(loop.previous_context_profile(self.root/'logs'),profile)
+        profile['prompt_upper_bound']=-1
+        loop.save_json(run/'manifest.json',{'context_profile':profile})
+        self.assertIsNone(loop.previous_context_profile(self.root/'logs'))
+
     def test_compaction_never_expands_short_outputs(self):
         recorder = loop.RecordingEngine(NS(), self.run_dir(), 49152, 2048)
         message = NS(role='tool', content='x' * 200, tool_call_id='a')

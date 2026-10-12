@@ -385,6 +385,7 @@ class RecoveryPolicy:
         self.retries = retries
         self.retries_used = 0
         self.sleep = sleep
+        self.context_profiles = {}
 
 
 class ActionLedger:
@@ -509,6 +510,19 @@ def previous_run_notice(logs, mission_id):
             "Do not reset logs. Preserve completed work and write the verified next handoff.\n" + state + required)
 
 
+def previous_context_profile(logs):
+    manifests = sorted((logs / "runs").glob("*/manifest.json"))
+    if not manifests:
+        return None
+    profile = json.loads(manifests[-1].read_text()).get("context_profile")
+    if (isinstance(profile, dict) and isinstance(profile.get("static_key"), str)
+            and isinstance(profile.get("tools_sha256"), str)
+            and type(profile.get("prompt_upper_bound")) is int
+            and 0 < profile["prompt_upper_bound"] <= 49152):
+        return profile
+    return None
+
+
 def now():
     return datetime.now().astimezone().isoformat(timespec="seconds")
 
@@ -631,7 +645,8 @@ def prepare_runtime(config_path):
 
 class RecordingEngine:
     """Preserve rules and archive long tool output before compacting model input."""
-    def __init__(self, engine, run_dir, num_ctx, max_tokens, policy=None, ledger=None):
+    def __init__(self, engine, run_dir, num_ctx, max_tokens, policy=None, ledger=None,
+                 static_context_key=None, static_context_bytes=0):
         self.engine = engine
         self.run_dir = run_dir
         self.num_ctx = num_ctx
@@ -645,6 +660,8 @@ class RecordingEngine:
         self.last_messages = None
         self.anchor_signature = None
         self.anchor_prompt_tokens = None
+        self.static_context_key = static_context_key
+        self.static_context_bytes = static_context_bytes
 
     @staticmethod
     def role(message):
@@ -812,6 +829,7 @@ class RecordingEngine:
             self.anchor_count = len(messages)
         self.last_messages = messages
         tools = json.dumps(kwargs.get("tools", []), ensure_ascii=False)
+        profile_key = (self.static_context_key, digest(tools.encode())) if self.static_context_key else None
         anchor = json.dumps(self.history_data(messages[:self.anchor_count]), ensure_ascii=False, default=str)
         signature = digest((anchor + tools).encode())
         if self.anchor_signature is not None and signature != self.anchor_signature:
@@ -820,6 +838,13 @@ class RecordingEngine:
         if self.calls - self.last_checkpoint_call >= 4:
             self.checkpoint(messages, "periodic")
         def estimate(items):
+            if profile_key in self.policy.context_profiles:
+                # The previous cycle measured the same fixed briefings/schema.
+                # That complete prompt count is an upper bound on the static
+                # part; conservatively count ALL current mutable state afresh.
+                payload = json.dumps(self.history_data(items), ensure_ascii=False, default=str)
+                variable_bytes = max(0, len(payload.encode()) - self.static_context_bytes)
+                return self.policy.context_profiles[profile_key] + variable_bytes // 2 + self.max_tokens
             if self.anchor_prompt_tokens is not None and signature == self.anchor_signature:
                 # Calibrate only the unchanged instruction/tool-schema prefix.
                 # New history still uses the conservative byte estimate. Never
@@ -875,9 +900,13 @@ class RecordingEngine:
                     # 20% plus 512 tokens for protocol/tokenizer uncertainty;
                     # output allowance is added separately by estimate().
                     self.anchor_prompt_tokens = int(observed * 1.2) + 512
+                    if profile_key:
+                        self.policy.context_profiles[profile_key] = max(
+                            self.policy.context_profiles.get(profile_key, 0), self.anchor_prompt_tokens)
                 elif self.anchor_prompt_tokens is not None and type(observed) is int and observed > estimated - self.max_tokens:
                     # Unexpected higher actual usage: discard calibration.
                     self.anchor_prompt_tokens = None
+                    self.policy.context_profiles.pop(profile_key, None)
                 with (self.run_dir / "model_calls.jsonl").open("a") as f:
                     f.write(json.dumps({"time": now(), "call": self.calls, "attempt": attempt + 1,
                                         "status": "RETURNED", "usage": response.get("usage", {}),
@@ -903,6 +932,7 @@ class RecordingEngine:
 
 def run_cycle(workspace, config_path, start_prompt, num_ctx, policy=None):
     checkout = control_checkout(workspace)
+    profile = previous_context_profile(workspace / "logs")
     # Read previous history before this run creates its own STARTING manifest.
     contract_id = json.loads((workspace / "briefing/agent_config.json").read_text())["mission_id"]
     continuity = previous_run_notice(workspace / "logs", contract_id)
@@ -991,7 +1021,18 @@ def run_cycle(workspace, config_path, start_prompt, num_ctx, policy=None):
             raise RuntimeError("Configured local Ollama is unavailable; no cloud fallback")
         _, engine = resolved
         sec = setup_security(cfg, engine, bus)
-        recorder = RecordingEngine(sec.engine, run_dir, num_ctx, cfg.intelligence.max_tokens, policy, ledger)
+        static_marker = "\n===== ACTIVE FILE: " + str((workspace / "logs").resolve()) + "/"
+        static_body = body.split(static_marker, 1)[0]
+        static_key = digest(json.dumps({"briefing": [f for f in files if Path(f["path"]).parent == (workspace / "briefing").resolve()],
+                                       "start_prompt": digest(start_prompt.read_bytes()), "model": model,
+                                       "agent": agent, "config_sha256": manifest["config_sha256"],
+                                       "openjarvis_version": package_version}, sort_keys=True).encode())
+        effective_policy = policy or RecoveryPolicy(num_ctx, num_ctx)
+        if profile and profile["static_key"] == static_key:
+            effective_policy.context_profiles[(static_key, profile["tools_sha256"])] = profile["prompt_upper_bound"]
+        recorder = RecordingEngine(sec.engine, run_dir, num_ctx, cfg.intelligence.max_tokens, policy, ledger,
+                                   static_context_key=static_key, static_context_bytes=len(static_body.encode()))
+        recorder.policy = effective_policy
         kwargs = dict(agent_name=agent, query_text=prompt, engine=recorder, model_name=model,
                       tool_names=tools, config=cfg, bus=bus,
                       temperature=cfg.intelligence.temperature, max_tokens=cfg.intelligence.max_tokens)
@@ -1106,6 +1147,12 @@ def run_cycle(workspace, config_path, start_prompt, num_ctx, policy=None):
         if recorder is not None:
             manifest.update(num_ctx=recorder.num_ctx, model_calls=recorder.calls,
                             inference_retries=recorder.policy.retries_used)
+            profiles = [(key, bound) for key, bound in recorder.policy.context_profiles.items()
+                        if key[0] == recorder.static_context_key]
+            if profiles:
+                key, bound = profiles[-1]
+                manifest["context_profile"] = {"static_key": key[0], "tools_sha256": key[1],
+                                               "prompt_upper_bound": bound}
         manifest["end"] = now()
         save_json(manifest_path, manifest)
         if engine is not None and hasattr(engine, "close"):
