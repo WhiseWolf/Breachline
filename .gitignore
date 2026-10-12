@@ -32,3 +32,6 @@ Thumbs.db
 # Never commit local Instagram tokens
 instagram.json
 .instagram-*.tmp
+
+# Never commit local Facebook Page tokens
+facebook.json
