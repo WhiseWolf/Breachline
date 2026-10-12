@@ -8,7 +8,8 @@ research/: tatsächliche Quellen und Abrufartefakte
 hypotheses/: falsifizierbare Hypothesen
 experiments/: ausgeführte Tests und Rohmesswerte
 prototypes/: kleine spielbare Kandidaten
-game/: Produktcode nach Evidence-Gates
+worktrees/<slug>/: separate Spiel-Checkouts auf Git-Branch game/<slug> von main; Spielcode darin unter games/<slug>/
+game/ und prototypes/: vorhandene Entwürfe zuerst prüfen und erhalten; kein zweiter kanonischer Produktpfad
 logs/: aktive Arbeitsdokumentation und Laufnachweise
 agent-logs/: ältere Ablage, kein zweiter aktiver Zustand
 ## Lokal

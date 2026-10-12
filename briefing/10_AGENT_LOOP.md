@@ -20,7 +20,7 @@ Geplant/versucht/ausgeführt/geprüft/bestätigt unterscheiden. Gates nur mit Be
 Prozessänderungen nur gemäß Adaptation Policy; keine erfundenen Baselines.
 ## 9. Continue
 CURRENT_WORK auf einen eindeutigen nächsten Auftrag aktualisieren. Sinnvoll und innerhalb der Freigaben weiterarbeiten.
-Nach jedem überprüfbaren Arbeitsschritt CURRENT_WORK knapp sichern. Der Scheduler archiviert zusätzlich regelmäßig die tatsächliche Historie und ersetzt abgeschlossene Tool-Dialoge bei knapper Kontextreserve durch einen belegten Artefaktverweis. Diese technische Sicherung bestätigt keinen fachlichen Abschluss. Archiv und tatsächliche Dateien prüfen, bevor Aktionen wiederholt werden; Regeln und Nutzeranweisungen bleiben erhalten.
+Nach jedem überprüfbaren Arbeitsschritt CURRENT_WORK fachlich aktualisieren: genauer Artefakt-/Teststand, Ergebnis, offene Prüfung, eine nächste Aktion. Der Scheduler archiviert zusätzlich die Historie und erhält beim Kontextwechsel die zuletzt abgeschlossene Tool-Austauschfolge sowie belegte Aktions-/Artefaktverweise. Diese technische Sicherung bestätigt keinen fachlichen Abschluss. Bei HANDOFF_REQUIRED zuerst die gespeicherten Runtime-Belege mit aktuellen Dateien abgleichen und den fachlichen Fortsetzungsstand nachholen. Bereits erstellten Code testen/verbessern, nicht erneut in einem anderen Ordner erzeugen. Regeln und Nutzeranweisungen bleiben erhalten.
 Falls Runtime endet: tatsächlichen Endstatus dokumentieren; keine automatische Fortsetzung behaupten, solange sie nicht beobachtet wurde.
 
 ## Fortsetzung und fachliche Abnahme

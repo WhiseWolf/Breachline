@@ -1,5 +1,25 @@
 # Neuer lokaler Jarvis-Scheduler
 
+## Systemaudit-Korrektur 2026-10-12
+Checkpoint-Sicherung und fachliche CURRENT_WORK-Änderung sind getrennt. Ohne fachliche Übergabe lautet der Rückkehrstatus HANDOFF_REQUIRED; der nächste Zyklus erhält strukturierte Aktions-/Artefaktbelege und holt die Übergabe nach. Kein automatischer fachlicher Erfolg aus einer Dateiänderung. Der letzte vollständige Tool-Austausch bleibt beim Rollen im aktiven Kontext. Die unveränderte Regel-/Tool-Präfixgröße wird anhand gemeldeter Prompt-Nutzung mit Reserve geplant; neue Inhalte behalten die konservative Schätzung.
+
+Der bestehende shell_exec-Ausführungspfad samt Sicherheitsrichtlinie wird um eine Exitstatusprüfung ergänzt. Rust-Ausgabeheader und Metadaten müssen konsistent sein. Widersprüchliche oder fehlende Prozessbelege werden nicht als Erfolg geführt. Unklare Schreibwirkungen bleiben blockiert; kein automatisches Replay. Checkout-/Switch-Befehle durch den Scheduler werden vor Ausführung blockiert, der Steuerungs-Checkout vor/nach Shell-Ausführung geprüft. Git-Worktrees bleiben für Spiele verfügbar. Das ist kein allgemeiner Shell-Sandboxersatz.
+
+### Vorhandenen Ubuntu-Stand übernehmen
+1. Im Scheduler-Terminal einmal Ctrl+C; auf die Meldung Scheduler stopped warten. Nicht Logs/Receipts löschen.
+2. Den bestehenden Steuerungs-Checkout ohne Reset wieder auf agent-lab bringen. Git muss lokale Änderungen erhalten; bei Konflikten nichts erzwingen.
+3. agent-lab aktualisieren und Offline-Briefings mit dem geprüften Helper übernehmen. Er sichert geänderte Briefings und verweigert unerkannte lokale Änderungen. Aktive Logs bleiben erhalten.
+
+```bash
+cd /home/pagi/breachline-agent
+git -C repo switch agent-lab
+git -C repo pull --ff-only origin agent-lab
+python3 repo/runtime/sync_briefing.py
+~/.openjarvis/.venv/bin/python -u repo/runtime/jarvis_loop.py
+```
+
+Abnahme: zwei echte aufeinanderfolgende Zyklen setzen einen bestehenden Artefakt-/Teststand fort; nächste Manifeste zeigen neue Scheduler-/Briefinghashes, reale Exitstatus und fachliche Übergabe. Mock-Tests bestätigen keinen lokalen Ollama-/Gameplay-Erfolg. Bestehende Prototypen zuerst inventarisieren; keine neuen Ordner durch den Nutzer anlegen und keine Mission zurücksetzen.
+
 Dieser Scheduler verwendet `/home/pagi/.openjarvis/config.toml` als Runtime-Konfiguration.
 Modell, Agent, Temperatur, max_tokens, max_turns und konfigurierte lokale Werkzeuge
 werden daraus gelesen. Toollisten aus [agent] und [tools] werden zusammengeführt.

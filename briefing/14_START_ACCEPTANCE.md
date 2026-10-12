@@ -18,3 +18,6 @@ Der GitHub-Audit prüft Dokumente. Lokale Loader-/Scheduler-/Memory-Abnahme wurd
 
 ## Abnahme nach Briefing-Updates
 Der nächste Kontextnachweis muss die tatsächlich geladenen neuen Briefing-Dateihashes zeigen; aktive Logs und Mission erhalten. Fachliche Abnahme gemäß 03_RESEARCH_PROTOCOL ist ein eigener Nachweis: Werkzeug-/Dateierfolg oder Konzeptanzahl allein reichen nicht.
+
+## Fortschrittsabnahme nach Systemaudit 2026-10-12
+Zwei tatsächliche aufeinanderfolgende Zyklen müssen einen konkreten Artefakt-/Teststand fortsetzen, statt ihn neu zu initialisieren. CURRENT_WORK muss fachlich aktualisiert sein; Runtime-Checkpoint-Text zählt dafür nicht. HANDOFF_REQUIRED bleibt sichtbar, bis diese Übergabe erfolgt ist. Exitcode und Werkzeugstatus müssen konsistent sein; der Steuerungs-Checkout bleibt auf agent-lab. Mock-Tests allein bestätigen keinen erfolgreichen lokalen Ollama-/Browser-Betrieb. Kein Logreset und keine größeren Limits als Ersatz für diese Abnahme.

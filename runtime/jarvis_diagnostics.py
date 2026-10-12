@@ -14,10 +14,10 @@ import re
 import subprocess
 import tempfile
 
-REPOSITORY = "https://github.com/WhiseWolf/Breachline.git"
+REPOSITORY = "https://github.com/WhiseWolf/breachline-logs-only.git"
 MAX_READ = 4 * 1024 * 1024
 TOOLS = set("file_read file_write apply_patch shell_exec git_status git_diff git_log git_commit web_search web_fetch http_request think calculator code_interpreter code_interpreter_docker docker_shell_exec memory_search memory_store".split())
-LABELS = set("STARTING RUNNING FAILED INTERRUPTED WAITING NO_PROGRESS CYCLE_RETURNED SUCCEEDED PENDING NOT_EXECUTED RETURNED TOOL_CALL_START TOOL_CALL_END tool_call_start tool_call_end CHECKPOINT_SAVED CONTEXT_ROLL CONTEXT_GROW INFERENCE_RETRY".split())
+LABELS = set("STARTING RUNNING FAILED INTERRUPTED WAITING NO_PROGRESS HANDOFF_REQUIRED CONTEXT_HANDOFF CYCLE_RETURNED SUCCEEDED PENDING NOT_EXECUTED RETURNED TOOL_CALL_START TOOL_CALL_END tool_call_start tool_call_end CHECKPOINT_SAVED CONTEXT_ROLL CONTEXT_GROW INFERENCE_RETRY".split())
 SKIP = {".git", ".venv", "venv", "node_modules", "__pycache__", "archive", "diagnostics"}
 
 
@@ -189,7 +189,7 @@ def upload(output, stamp, repository=REPOSITORY):
         git(["add", "--", "report.json", "SUMMARY.md"], work)
         git(["-c", "user.name=Jarvis Diagnostics", "-c", "user.email=diagnostics@localhost", "-c", "commit.gpgsign=false", "commit", "-q", "-m", "Add metadata-only Jarvis diagnostic snapshot"], work)
         git(["push", "origin", "HEAD:refs/heads/" + branch], work)
-    print("Hochgeladen: https://github.com/WhiseWolf/Breachline/blob/" + branch + "/SUMMARY.md")
+    print("Hochgeladen: https://github.com/WhiseWolf/breachline-logs-only/blob/" + branch + "/SUMMARY.md")
     print("Diagnose-Branch: " + branch)
 
 
@@ -219,7 +219,7 @@ def main():
                 if remote.returncode == 0 and remote.stdout.strip() in {
                     REPOSITORY, "git@github.com:WhiseWolf/Breachline.git",
                     "ssh://git@github.com/WhiseWolf/Breachline.git"}:
-                    repository = remote.stdout.strip()
+                    repository = ("git@github.com:WhiseWolf/breachline-logs-only.git" if remote.stdout.strip().startswith(("git@", "ssh://")) else REPOSITORY)
                     break
             except (OSError, subprocess.TimeoutExpired):
                 pass

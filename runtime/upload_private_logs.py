@@ -71,6 +71,9 @@ def copy_logs(source, target):
     inventory = []
     # No silent exclusions: refuse symlinks/special files rather than omit them.
     for directory, dirs, names in os.walk(source, followlinks=False):
+        # git init in logs/ creates administration data, not agent log files.
+        dirs[:] = [name for name in dirs if name != ".git"]
+        names = [name for name in names if name != ".git"]
         for name in dirs + names:
             path = Path(directory) / name
             if path.is_symlink():

@@ -1,6 +1,6 @@
 {
   "project": "Local Browser Game Discovery Agent",
-  "version": 2.3,
+  "version": 2.4,
   "primary_brief": "AGENT_BRIEFING_FULL.md",
   "required_context_files": [
     "00_README_FIRST.md",
@@ -58,7 +58,13 @@
     "logs": "<workspace>/logs",
     "repo": "Production layout only: <workspace>/repo. If validating the repo copy itself, do not append /repo again. Agent git operations use independently verified checkout.",
     "enforcement": "descriptive; runtime loader implementation must be verified",
-    "log_paths": "Relative to directory containing this config; ../logs means sibling of briefing directory."
+    "log_paths": "Relative to directory containing this config; ../logs means sibling of briefing directory.",
+    "control_checkout": "<workspace>/repo",
+    "control_branch": "agent-lab",
+    "game_branch": "game/<slug> from main",
+    "preferred_game_worktree": "<workspace>/worktrees/<slug>",
+    "relative_game_file": "games/<slug>/index.html",
+    "existing_artifacts": "Inspect and retain existing drafts/worktrees before selecting one canonical verified game path; no automatic rebuild or reset"
   },
   "external_actions_require_user_scope": "Only actions requiring approval under Constitution: public uploads/posts, account creation, payment, irreversible external actions, sensitive decisions and non-authorized system changes. Public read-only research does not require new approval. Existing documented approval may be used without renewed confirmation; GitHub Pages prototype test hosting is authorized within briefing/13_AUTHORIZATIONS.md scope.",
   "paid_services_allowed": false,

@@ -155,9 +155,10 @@ class ContextTests(unittest.TestCase):
         self.assertFalse(recorder.roll_history(messages, "test"))
         self.assertEqual(recorder.checkpoints, 0)
         messages.append(SimpleNamespace(role="tool", content="done", tool_call_id="pending"))
-        self.assertTrue(recorder.roll_history(messages, "test"))
+        # The only completed exchange stays available for interpretation.
+        self.assertFalse(recorder.roll_history(messages, "test"))
         self.assertIs(messages[1], instruction)
-        self.assertIsNone(messages[-1].tool_calls)
+        self.assertEqual(messages[-1].tool_call_id, "pending")
 
     def test_periodic_checkpoint_does_not_require_model_file_write(self):
         run = self.root / "logs/runs/periodic"
@@ -653,7 +654,8 @@ class CycleIntegrationTests(unittest.TestCase):
             "openjarvis.cli.ask": SimpleNamespace(_run_agent=agent),
         }
         policy = loop.RecoveryPolicy(32768, sleep=Mock())
-        with patch.dict(sys.modules, modules), patch.object(loop, "prepare_runtime", return_value=(
+        with patch.dict(sys.modules, modules), patch.object(loop, "control_checkout", return_value={"branch": "agent-lab"}), \
+             patch.object(loop, "install_shell_guard", return_value=lambda: None), patch.object(loop, "prepare_runtime", return_value=(
                 cfg, "operative", "local", ["file_read", "file_write", "web_search"], [])):
             if unreported_failure:
                 with self.assertRaises(loop.UnsafeRecoveryError):
