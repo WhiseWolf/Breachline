@@ -16,6 +16,9 @@ Der Steuerungs-Checkout <workspace>/repo bleibt auf agent-lab. Spiel-Worktree:
 <workspace>/worktrees/<slug> oder ein bereits verifizierter vorhandener Worktree
 auf game/<slug>. Relativer Spiel-Dateipfad darin: games/<slug>/index.html.
 Branchname, Worktree-Wurzel und Dateipfad nicht miteinander verwechseln.
+Der Workspace selbst ist kein Git-Checkout: Git-Inspektion mit git -C
+<workspace>/repo worktree list --porcelain oder working_dir auf den verifizierten
+Checkout setzen. Ein fehlgeschlagener rein lesender Git-Aufruf ist kein Schreibfehler.
 Beachte außerdem die dokumentierte Freigabe für
 organische Spieltest-Aufrufe auf verifizierten vorhandenen Projekt-Social-Accounts.
 Eine öffentliche Testseite allein liefert keine Spieler: Bekanntmachung, tatsächliches

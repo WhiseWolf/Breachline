@@ -11,6 +11,7 @@ import inspect
 import json
 import os
 import re
+import shlex
 import subprocess
 import importlib.metadata
 from pathlib import Path
@@ -229,8 +230,48 @@ def review_isolated_failures(run_dir, actions):
     return reviewed
 
 
+def read_only_shell(arguments):
+    """Recognize a deliberately small set of observational Git commands.
+
+    Not a general shell parser. Substitutions, redirects, pipelines, scripts,
+    arbitrary Git options and mixed commands remain potentially mutating.
+    """
+    if isinstance(arguments, str):
+        try:
+            arguments = json.loads(arguments)
+        except ValueError:
+            return False
+    if not isinstance(arguments, dict):
+        return False
+    command = arguments.get("command")
+    if not isinstance(command, str) or any(c in command for c in "\n\r;$`|<>*?[]#\\"):
+        return False
+    try:
+        words = shlex.split(command)
+    except ValueError:
+        return False
+    safe_path = lambda value: bool(re.fullmatch(r"/[A-Za-z0-9._/-]+", value))
+    if len(words) >= 3 and words[0] == "cd":
+        if not safe_path(words[1]) or words[2] != "&&":
+            return False
+        words = words[3:]
+    if not words or words.pop(0) != "git" or any("&" in w for w in words):
+        return False
+    if words[:1] == ["--no-optional-locks"]:
+        words = words[1:]
+    if words[:1] == ["-C"]:
+        if len(words) < 3 or not safe_path(words[1]):
+            return False
+        words = words[2:]
+    if words[:2] == ["worktree", "list"]:
+        return all(w in {"--porcelain", "-z"} for w in words[2:])
+    return words in [["rev-parse", "--show-toplevel"], ["rev-parse", "--is-inside-work-tree"]]
+
+
 def potential_write(name, data):
     if name in READ_ONLY_TOOLS:
+        return False
+    if name == "shell_exec" and read_only_shell(data.get("arguments", {})):
         return False
     if name == "http_request":
         arguments = data.get("arguments", {})
@@ -433,6 +474,64 @@ class ActionLedger:
             raise UnsafeRecoveryError(f"Uncertain side effects from {uncertain}; inspect {self.path}. No automatic replay.")
 
 
+def review_completed_read_only_shells(run_dir, actions):
+    """Reclassify paired, completed old read failures without changing receipts.
+
+    Requires structured call arguments, exact saved result, matching nonzero
+    exit code and occurrence counts. Ambiguous/missing evidence stays blocked.
+    No command is executed and no old action is retried.
+    """
+    snapshot_path = run_dir / "failure_snapshot.json"
+    if not snapshot_path.is_file():
+        return actions
+    try:
+        snapshot = json.loads(snapshot_path.read_text())
+        calls, completed = {}, []
+        seen_results = set()
+        for message in snapshot.get("messages", []):
+            role = str(message.get("role", "")).lower().split(".")[-1]
+            if role == "assistant":
+                for call in message.get("tool_calls") or []:
+                    if isinstance(call, dict) and call.get("name") == "shell_exec" and call.get("id"):
+                        if call["id"] in calls:
+                            return actions
+                        calls[call["id"]] = call
+            elif role == "tool" and message.get("tool_call_id") in calls:
+                if message["tool_call_id"] in seen_results:
+                    return actions
+                seen_results.add(message["tool_call_id"])
+                completed.append((calls[message["tool_call_id"]], message.get("content", "")))
+        indexes = [i for i, a in enumerate(actions) if a.get("tool") == "shell_exec"]
+        if len(indexes) != len(completed):
+            return actions
+        reviewed, evidence = copy.deepcopy(actions), []
+        for index, (call, result) in zip(indexes, completed):
+            action = actions[index]
+            if action.get("status") != "FAILED" or not action.get("potential_write"):
+                continue
+            if not read_only_shell(call.get("arguments", {})):
+                continue
+            path = Path(action.get("result_path", "")).resolve()
+            if not path.is_relative_to(run_dir.resolve()) or not path.is_file() or path.read_text() != result:
+                continue
+            code, conflict = shell_exit_code(result, {"returncode": action.get("returncode")})
+            if conflict or code is None or code == 0:
+                continue
+            reviewed[index].update(potential_write=False, review="Completed read-only Git inspection; failure retained")
+            evidence.append({"action_index": index, "call_id": call["id"],
+                             "arguments": call["arguments"], "result_sha256": digest(result.encode())})
+        if evidence:
+            save_json(run_dir / "read_only_action_review.json", {
+                "time": now(), "actions": reviewed, "evidence": evidence,
+                "original_receipts_sha256": digest((run_dir / "action_receipts.json").read_bytes()),
+                "failure_snapshot_sha256": digest(snapshot_path.read_bytes()),
+                "note": "Original FAILED receipts retained. Read-only classification corrected; no action replayed."})
+            return reviewed
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+        pass
+    return actions
+
+
 def check_previous_run(logs):
     """Crash/restart must not erase uncertainty recorded by the last run."""
     manifests = sorted((logs / "runs").glob("*/manifest.json"))
@@ -443,6 +542,7 @@ def check_previous_run(logs):
     receipts = latest.with_name("action_receipts.json")
     if receipts.exists():
         actions = json.loads(receipts.read_text())
+        actions = review_completed_read_only_shells(latest.parent, actions)
         actions = review_isolated_failures(latest.parent, actions)
         if any(a["potential_write"] and a["status"] in {"PENDING", "FAILED"} for a in actions):
             raise UnsafeRecoveryError(f"Previous run has uncertain side effects: {receipts}. Verify actual state before restarting; do not delete receipts to bypass this check.")
@@ -492,6 +592,11 @@ def previous_run_notice(logs, mission_id):
                         "was retained; it did not create the host game file. Inspect host files "
                         "and use file_write(create_dirs=true) for the corrected step. "
                         "Do not replay the container script. " if review.is_file() else "")
+    read_review = latest.with_name("read_only_action_review.json")
+    if read_review.is_file():
+        isolation_notice += (f" Completed read-only Git failure review: {read_review}. "
+                             "Failure retained; it did not mutate project files. Git inspection "
+                             "must use the verified checkout, e.g. git -C <workspace>/repo worktree list. ")
     handoff = latest.with_name("runtime_handoff.json")
     state = ""
     if handoff.is_file():
